@@ -23,21 +23,28 @@ class BoardViewModel @Inject constructor(
 	private val _state = MutableStateFlow(BoardState())
 	val state: StateFlow<BoardState> = _state.asStateFlow()
 
-	init {
-		_state.update { state ->
-			state.copy(
-				isLoading = false
-			)
-		}
-	}
-
 	fun onAction(action: BoardAction) {
 		when (action) {
-			is BoardAction.OnPerformAnimationToggled -> TODO()
+			is BoardAction.OnBoardClicked -> onBoardClicked(action.position)
 		}
 	}
 
 	/**
 	 * State Methods
 	 */
+
+	private fun onBoardClicked(position: Position) {
+		val newBoardData = _state.value.boardData.toMutableList()
+		val newData = BoardData(
+			cellState = CellState.BLACK,
+			position = position,
+			filled = true
+		)
+		newBoardData += newData
+		_state.update { state ->
+			state.copy(
+				boardData = newBoardData
+			)
+		}
+	}
 }

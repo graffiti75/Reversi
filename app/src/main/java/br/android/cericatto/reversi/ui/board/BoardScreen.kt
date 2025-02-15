@@ -34,6 +34,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import br.android.cericatto.reversi.ObserveAsEvents
 import br.android.cericatto.reversi.navigation.Route
 import br.android.cericatto.reversi.ui.UiEvent
@@ -48,6 +49,7 @@ fun BoardScreenRoot(
 	onNavigateUp: () -> Unit,
 	viewModel: BoardViewModel = hiltViewModel()
 ) {
+	val state by viewModel.state.collectAsStateWithLifecycle()
 	val scope = rememberCoroutineScope()
 	val snackbarHostState = remember { SnackbarHostState() }
 	val context = LocalContext.current
@@ -66,28 +68,32 @@ fun BoardScreenRoot(
 		}
 	}
 	BoardScreen(
-		onAction = viewModel::onAction
+		onAction = viewModel::onAction,
+		state = state
 	)
 }
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun BoardScreen(
-	onAction: (BoardAction) -> Unit
+	onAction: (BoardAction) -> Unit,
+	state: BoardState
 ) {
 	Scaffold { innerPadding ->
 		BoardMainContent(
-			onAction = onAction,
 			modifier = Modifier
-				.padding(innerPadding)
+				.padding(innerPadding),
+			onAction = onAction,
+			state = state
 		)
 	}
 }
 
 @Composable
 private fun BoardMainContent(
+	modifier: Modifier,
 	onAction: (BoardAction) -> Unit,
-	modifier: Modifier
+	state: BoardState
 ) {
 	val configuration = LocalConfiguration.current
 	val padding = 5.dp
@@ -112,8 +118,11 @@ private fun BoardMainContent(
 				.padding(padding)
 				.background(boardGreen)
 		) {
-			GridCanvas(canvasSize = width)
-//			ClickableCanvas()
+			GridCanvas(
+				canvasSize = width,
+				onAction = onAction,
+				state = state
+			)
 		}
 	}
 }
@@ -121,6 +130,8 @@ private fun BoardMainContent(
 @Composable
 fun GridCanvas(
 	modifier: Modifier = Modifier,
+	onAction: (BoardAction) -> Unit,
+	state: BoardState,
 	canvasSize: Dp = 300.dp,
 	gridSize: Int = 8,
 	lineColor: Color = Color.Black,
@@ -142,12 +153,12 @@ fun GridCanvas(
 	) {
 		val canvasWidth = size.width
 		val canvasHeight = size.height
-		println("canvasWidth: $canvasWidth")
-		println("canvasHeight: $canvasHeight")
+//		println("canvasWidth: $canvasWidth")
+//		println("canvasHeight: $canvasHeight")
 
 		// Calculate the cell size based on the canvas dimensions
 		cellSize = canvasWidth / gridSize
-		println("cellSize: $cellSize")
+//		println("cellSize: $cellSize")
 
 		// Draw vertical lines
 		for (i in 0..gridSize) {
@@ -175,7 +186,7 @@ fun GridCanvas(
 		radius = cellSize * 0.45f
 
 		// Draw circles based on the board state
-		sampleBoardState.forEach { item ->
+		state.boardData.forEach { item ->
 			if (item.cellState != CellState.EMPTY) {
 				val center = centerPosition(
 					cellSize = cellSize,
@@ -202,103 +213,46 @@ fun GridCanvas(
 				position = position
 			)
 			if (!filled) {
+				val pair = boardPosition(
+					cellSize = cellSize,
+					position = position
+				)
+				onAction(BoardAction.OnBoardClicked(position = Position(pair.first, pair.second)))
 				drawCircle(
 					color = teal,
 					radius = radius,
 					center = Offset(center.x, center.y),
 					style = Fill
 				)
+
 			}
 		}
 	}
 }
 
-/*
-@Composable
-fun ClickableCanvas() {
-	// State to store the current click position
-	var clickPosition by remember { mutableStateOf<Offset?>(null) }
-
-	// State to store the current drag position
-	var dragPosition by remember { mutableStateOf<Offset?>(null) }
-
-	// State to store a list of all click positions if you want to track multiple clicks
-	var clickHistory by remember { mutableStateOf(listOf<Offset>()) }
-
-	Canvas(
-		modifier = Modifier
-			.fillMaxSize()
-			// Handle tap gestures
-			.pointerInput(Unit) {
-				detectTapGestures { offset ->
-					// Update the click position when a tap is detected
-					clickPosition = offset
-					// Add the click to history
-					clickHistory = clickHistory + offset
-				}
-			}
-			// Handle drag gestures
-			.pointerInput(Unit) {
-				detectDragGestures { change, dragAmount ->
-					// Update the drag position as the user drags
-					dragPosition = change.position
-				}
-			}
-	) {
-		// Draw a visual indicator for the current click position
-		clickPosition?.let { position ->
-			drawCircle(
-				color = Color.Red,
-				radius = 20f,
-				center = position
-			)
-		}
-
-		// Draw a different visual indicator for the drag position
-		dragPosition?.let { position ->
-			drawCircle(
-				color = Color.Blue,
-				radius = 20f,
-				center = position
-			)
-		}
-
-		// Draw smaller dots for historical clicks
-		clickHistory.forEach { position ->
-			drawCircle(
-				color = Color.Gray,
-				radius = 5f,
-				center = position
-			)
-		}
-	}
+fun checkNeighbors() {
+	// TODO
 }
- */
 
 @Preview
 @Composable
 fun GridScreenPreview() {
 	GridCanvas(
 		modifier = Modifier,
+		onAction = {},
+		state = BoardState(),
 		gridSize = 8,
 		lineColor = Color.Black,
 		lineThickness = 2f
 	)
 }
 
-/*
-@Preview
-@Composable
-private fun ClickableCanvasPreview() {
-	ClickableCanvas()
-}
- */
-
 @Preview
 @Composable
 private fun BoardScreenPreview() {
 	BoardScreen(
-		onAction = {}
+		onAction = {},
+		state = BoardState()
 	)
 }
 
@@ -306,7 +260,8 @@ private fun BoardScreenPreview() {
 @Composable
 private fun BoardMainContentPreview() {
 	BoardMainContent(
+		modifier = Modifier,
 		onAction = {},
-		modifier = Modifier
+		state = BoardState()
 	)
 }

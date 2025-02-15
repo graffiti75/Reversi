@@ -1,5 +1,5 @@
 package br.android.cericatto.reversi.ui.board
 
 sealed interface BoardAction {
-	data class OnPerformAnimationToggled(val performAnimation: Boolean) : BoardAction
+	data class OnBoardClicked(val position: Position) : BoardAction
 }

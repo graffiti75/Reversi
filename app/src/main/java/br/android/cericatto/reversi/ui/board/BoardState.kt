@@ -1,7 +1,7 @@
 package br.android.cericatto.reversi.ui.board
 
 data class BoardState(
-	val isLoading : Boolean = false
+	val boardData : List<BoardData> = sampleBoardState
 )
 
 /**
