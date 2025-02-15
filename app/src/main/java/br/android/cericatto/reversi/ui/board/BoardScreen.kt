@@ -3,20 +3,16 @@ package br.android.cericatto.reversi.ui.board
 import android.annotation.SuppressLint
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
@@ -38,37 +34,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import br.android.cericatto.reversi.ObserveAsEvents
 import br.android.cericatto.reversi.navigation.Route
 import br.android.cericatto.reversi.ui.UiEvent
 import br.android.cericatto.reversi.ui.theme.boardGreen
 import br.android.cericatto.reversi.ui.theme.boardMustard
-import br.android.cericatto.reversi.ui.theme.orange
+import br.android.cericatto.reversi.ui.theme.teal
 import kotlinx.coroutines.launch
-
-/**
- * Enum to represent the possible states of each cell.
- */
-enum class CellState {
-	EMPTY,
-	BLACK,
-	WHITE
-}
-
-/**
- * Data class to represent a position on the board.
- */
-data class Position(val row: Int, val col: Int)
-
-/**
- * Data class to control the state of each Board Piece
- */
-data class BoardState(
-	val cellState: CellState = CellState.EMPTY,
-	val position: Position = Position(0, 0),
-	val filled : Boolean = false
-)
 
 @Composable
 fun BoardScreenRoot(
@@ -76,7 +48,6 @@ fun BoardScreenRoot(
 	onNavigateUp: () -> Unit,
 	viewModel: BoardViewModel = hiltViewModel()
 ) {
-	val state by viewModel.state.collectAsStateWithLifecycle()
 	val scope = rememberCoroutineScope()
 	val snackbarHostState = remember { SnackbarHostState() }
 	val context = LocalContext.current
@@ -95,63 +66,32 @@ fun BoardScreenRoot(
 		}
 	}
 	BoardScreen(
-		onAction = viewModel::onAction,
-		state = state
+		onAction = viewModel::onAction
 	)
 }
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun BoardScreen(
-	onAction: (BoardAction) -> Unit,
-	state: PinState
+	onAction: (BoardAction) -> Unit
 ) {
-	if (state.isLoading) {
-		Box(
+	Scaffold { innerPadding ->
+		BoardMainContent(
+			onAction = onAction,
 			modifier = Modifier
-				.padding(vertical = 20.dp)
-				.fillMaxSize()
-				.background(Color.White),
-			contentAlignment = Alignment.Center
-		) {
-			CircularProgressIndicator(
-				color = MaterialTheme.colorScheme.primary,
-				strokeWidth = 4.dp,
-				modifier = Modifier.size(64.dp)
-			)
-		}
-	} else {
-		Scaffold { innerPadding ->
-			BoardMainContent(
-				onAction = onAction,
-				modifier = Modifier
-					.padding(innerPadding),
-				state = state
-			)
-		}
+				.padding(innerPadding)
+		)
 	}
 }
 
 @Composable
 private fun BoardMainContent(
 	onAction: (BoardAction) -> Unit,
-	modifier: Modifier,
-	state: PinState
+	modifier: Modifier
 ) {
 	val configuration = LocalConfiguration.current
 	val padding = 5.dp
 	val width = configuration.screenWidthDp.dp
-
-	val sampleBoardState = mapOf(
-		Position(0, 0) to CellState.BLACK,
-		Position(0, 1) to CellState.WHITE,
-		Position(3, 4) to CellState.BLACK,
-		Position(3, 3) to CellState.WHITE,
-		Position(5, 2) to CellState.WHITE,
-		Position(5, 5) to CellState.WHITE,
-		Position(7, 1) to CellState.BLACK,
-		Position(7, 6) to CellState.BLACK
-	)
 
 	Column(
 		horizontalAlignment = Alignment.CenterHorizontally,
@@ -172,12 +112,7 @@ private fun BoardMainContent(
 				.padding(padding)
 				.background(boardGreen)
 		) {
-			//
-			GridCanvas(
-				canvasSize = width,
-				boardState = sampleBoardState
-			)
-			 //
+			GridCanvas(canvasSize = width)
 //			ClickableCanvas()
 		}
 	}
@@ -189,12 +124,11 @@ fun GridCanvas(
 	canvasSize: Dp = 300.dp,
 	gridSize: Int = 8,
 	lineColor: Color = Color.Black,
-	lineThickness: Float = 5f,
-	// Map to store the state of each position on the board
-	boardState: Map<Position, CellState> = emptyMap()
+	lineThickness: Float = 5f
 ) {
 	var clickPosition by remember { mutableStateOf<Offset?>(null) }
 	var radius by remember { mutableFloatStateOf(0f) }
+	var cellSize by remember { mutableFloatStateOf(0f) }
 
 	// We create a square canvas with equal width and height
 	Canvas(
@@ -212,7 +146,7 @@ fun GridCanvas(
 		println("canvasHeight: $canvasHeight")
 
 		// Calculate the cell size based on the canvas dimensions
-		val cellSize = canvasWidth / gridSize
+		cellSize = canvasWidth / gridSize
 		println("cellSize: $cellSize")
 
 		// Draw vertical lines
@@ -241,15 +175,15 @@ fun GridCanvas(
 		radius = cellSize * 0.45f
 
 		// Draw circles based on the board state
-		boardState.forEach { (position, state) ->
-			if (state != CellState.EMPTY) {
-				val center = calculateCenterPosition(
+		sampleBoardState.forEach { item ->
+			if (item.cellState != CellState.EMPTY) {
+				val center = centerPosition(
 					cellSize = cellSize,
-					row = position.row,
-					col = position.col
+					row = item.position.row,
+					col = item.position.col
 				)
 				drawCircle(
-					color = if (state == CellState.BLACK) Color.Black else Color.White,
+					color = if (item.cellState == CellState.BLACK) Color.Black else Color.White,
 					radius = radius,
 					center = center,
 					style = Fill
@@ -259,73 +193,27 @@ fun GridCanvas(
 
 		// Draw a visual indicator for the current click position
 		clickPosition?.let { position ->
-			var center = calculateCenterClickedPosition(
-				canvasSize = canvasSize.toPx(),
+			val center = calculateCenterClickedPosition(
+				cellSize = cellSize,
 				position = position
 			)
-			drawCircle(
-				color = orange,
-//				radius = 10f,
-				radius = radius,
-				center = Offset(center.x, center.y),
-				style = Fill
+			val filled = boardPositionIsFilled(
+				cellSize = cellSize,
+				position = position
 			)
+			if (!filled) {
+				drawCircle(
+					color = teal,
+					radius = radius,
+					center = Offset(center.x, center.y),
+					style = Fill
+				)
+			}
 		}
 	}
 }
 
-fun calculateCenterPosition(
-	cellSize: Float,
-	row: Int,
-	col: Int
-): Offset {
-	val centerX = (col * cellSize) + (cellSize / 2)
-	val centerY = (row * cellSize) + (cellSize / 2)
-	return Offset(centerX, centerY)
-}
-
-fun calculateCenterClickedPosition(
-	canvasSize: Float,
-	gridSize: Int = 8,
-	position: Offset,
-	lineThickness: Float = 5f
-): Offset {
-	val totalLineThickness = (gridSize + 1) * lineThickness
-	val availableSpace = canvasSize - totalLineThickness
-	val cellSize = availableSpace / gridSize
-	val cellSizeWithLine = cellSize + lineThickness
-
-	println("canvasSize: $canvasSize")
-	println("position: $position")
-	println("-----")
-	println("totalLineThickness: $totalLineThickness")
-	println("availableSpace: $availableSpace")
-	println("cellSize: $cellSize")
-	println("cellSizeWithLine: $cellSizeWithLine")
-	println("-----")
-
-	val col = (position.x / cellSize).toInt()
-	val row = (position.y / cellSize).toInt()
-	println("col: $col")
-	println("row: $row")
-
-	val shiftX = lineThickness + (col * cellSizeWithLine)
-	val shiftY = lineThickness + (row * cellSizeWithLine)
-	val centerX = lineThickness + (col * cellSizeWithLine) + (cellSize / 2)
-	val centerY = lineThickness + (row * cellSizeWithLine) + (cellSize / 2)
-//	val centerX = shiftX
-//	val centerY = shiftY
-	println("centerX: $centerX")
-	println("centerY: $centerY\n\n")
-
-//	return Offset(centerX, centerY)
-	return calculateCenterPosition(
-		cellSize = cellSize,
-		row = row,
-		col = col
-	)
-}
-
+/*
 @Composable
 fun ClickableCanvas() {
 	// State to store the current click position
@@ -385,55 +273,32 @@ fun ClickableCanvas() {
 		}
 	}
 }
+ */
 
 @Preview
 @Composable
 fun GridScreenPreview() {
-	/*
-	val sampleBoardState = listOf(
-		BoardState(
-			cellState = CellState.BLACK,
-			position = Position(0, 0),
-			gridPosition = calculateGridPosition(Position(0, 0))
-		),
-		BoardState(
-			cellState = CellState.WHITE,
-			position = Position(0, 1),
-			gridPosition = calculateGridPosition(Position(0, 1))
-		)
-	)
-	 */
-	val sampleBoardState = mapOf(
-		Position(0, 0) to CellState.BLACK,
-		Position(0, 1) to CellState.WHITE,
-		Position(3, 4) to CellState.BLACK,
-		Position(3, 3) to CellState.WHITE,
-		Position(5, 2) to CellState.WHITE,
-		Position(5, 5) to CellState.WHITE,
-		Position(7, 1) to CellState.BLACK,
-		Position(7, 6) to CellState.BLACK
-	)
 	GridCanvas(
 		modifier = Modifier,
 		gridSize = 8,
 		lineColor = Color.Black,
-		lineThickness = 2f,
-		boardState = sampleBoardState
+		lineThickness = 2f
 	)
 }
 
+/*
 @Preview
 @Composable
 private fun ClickableCanvasPreview() {
 	ClickableCanvas()
 }
+ */
 
 @Preview
 @Composable
 private fun BoardScreenPreview() {
 	BoardScreen(
-		onAction = {},
-		state = PinState()
+		onAction = {}
 	)
 }
 
@@ -442,7 +307,6 @@ private fun BoardScreenPreview() {
 private fun BoardMainContentPreview() {
 	BoardMainContent(
 		onAction = {},
-		modifier = Modifier,
-		state = PinState()
+		modifier = Modifier
 	)
 }

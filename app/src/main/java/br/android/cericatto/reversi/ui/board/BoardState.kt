@@ -1,20 +1,63 @@
 package br.android.cericatto.reversi.ui.board
 
-import androidx.compose.ui.graphics.Color
-import br.android.cericatto.reversi.ui.theme.circleBackground
+data class BoardState(
+	val isLoading : Boolean = false
+)
 
-const val MAX_PIN_TYPED = 5
+/**
+ * Enum to represent the possible states of each cell.
+ */
+enum class CellState {
+	EMPTY,
+	BLACK,
+	WHITE
+}
 
-data class PinState(
-	val isLoading : Boolean = false,
-	val isEnabled : Boolean = false,
-	val shouldShowLogout : Boolean = false,
-	val performAnimation : Boolean = false,
-	val username : String = "JohnDoe",
-	val title : String = "Hello, $username!",
-	val subtitle : String = "Enter your PIN",
-	val pinCircleStepsColors : List<Color> = listOf(
-		circleBackground, circleBackground, circleBackground, circleBackground, circleBackground
+/**
+ * Data class to represent a Board Position.
+ */
+data class Position(val row: Int, val col: Int)
+
+/**
+ * Data class to control the state of each Board Piece.
+ */
+data class BoardData(
+	val cellState: CellState = CellState.EMPTY,
+	val position: Position = Position(0, 0),
+	val filled : Boolean = false
+)
+
+val sampleBoardState = listOf(
+	BoardData(
+		cellState = CellState.BLACK,
+		position = Position(0, 0),
 	),
-	val currentCircleStep : Int = 0
+	BoardData(
+		cellState = CellState.WHITE,
+		position = Position(0, 1),
+	),
+	BoardData(
+		cellState = CellState.BLACK,
+		position = Position(3, 4),
+	),
+	BoardData(
+		cellState = CellState.WHITE,
+		position = Position(3, 3),
+	),
+	BoardData(
+		cellState = CellState.WHITE,
+		position = Position(5, 2),
+	),
+	BoardData(
+		cellState = CellState.WHITE,
+		position = Position(5, 5),
+	),
+	BoardData(
+		cellState = CellState.BLACK,
+		position = Position(7, 1),
+	),
+	BoardData(
+		cellState = CellState.BLACK,
+		position = Position(7, 7),
+	)
 )
