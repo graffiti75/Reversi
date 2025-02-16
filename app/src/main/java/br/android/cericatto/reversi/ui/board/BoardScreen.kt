@@ -3,6 +3,7 @@ package br.android.cericatto.reversi.ui.board
 import android.annotation.SuppressLint
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -15,6 +16,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -30,9 +32,12 @@ import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import br.android.cericatto.reversi.ObserveAsEvents
@@ -40,6 +45,7 @@ import br.android.cericatto.reversi.navigation.Route
 import br.android.cericatto.reversi.ui.UiEvent
 import br.android.cericatto.reversi.ui.theme.boardGreen
 import br.android.cericatto.reversi.ui.theme.boardMustard
+import br.android.cericatto.reversi.ui.theme.orange
 import br.android.cericatto.reversi.ui.theme.teal
 import kotlinx.coroutines.launch
 
@@ -106,6 +112,19 @@ private fun BoardMainContent(
 			.size(width)
 			.padding(padding)
 	) {
+		Text(
+			text = "Click here",
+			style = TextStyle(
+				fontSize = 30.sp,
+				fontWeight = FontWeight.Bold,
+				color = Color.White
+			),
+			modifier = Modifier.background(orange)
+				.padding(10.dp)
+				.clickable {
+					onAction(BoardAction.OnButtonClicked)
+				}
+		)
 		Box(
 			contentAlignment = Alignment.Center,
 			modifier = Modifier

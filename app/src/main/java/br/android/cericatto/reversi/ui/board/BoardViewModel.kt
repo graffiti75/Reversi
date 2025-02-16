@@ -26,6 +26,7 @@ class BoardViewModel @Inject constructor(
 	fun onAction(action: BoardAction) {
 		when (action) {
 			is BoardAction.OnBoardClicked -> onBoardClicked(action.position)
+			is BoardAction.OnButtonClicked -> onButtonClicked()
 		}
 	}
 
@@ -43,8 +44,20 @@ class BoardViewModel @Inject constructor(
 		newBoardData += newData
 		_state.update { state ->
 			state.copy(
-				boardData = newBoardData
+				boardData = newBoardData,
+				last = newData
 			)
+		}
+	}
+
+	private fun onButtonClicked() {
+		_state.value.last?.let { last ->
+			_state.value.boardData.forEach { item ->
+				val distance = differenceBetweenTwoPoints(
+					last.position, item.position
+				)
+				println("----- ($item) distance: $distance")
+			}
 		}
 	}
 }

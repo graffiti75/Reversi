@@ -1,7 +1,8 @@
 package br.android.cericatto.reversi.ui.board
 
 data class BoardState(
-	val boardData : List<BoardData> = sampleBoardState
+	val boardData : List<BoardData> = sampleBoardState,
+	val last : BoardData? = null
 )
 
 /**
