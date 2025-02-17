@@ -47,10 +47,77 @@ fun calculateCenterClickedPosition(
 	)
 }
 
+fun isDiagonal(
+	current: Position,
+	next: Position
+): Boolean {
+	val x = (next.col - current.col).absoluteValue
+	val y = (next.row - current.row).absoluteValue
+	return x == y
+}
+
+fun differenceBetweenTwoPoints(
+	current: Position,
+	next: Position
+): Int {
+	val x = ((next.col - current.col).absoluteValue).toDouble()
+	val y = ((next.row - current.row).absoluteValue).toDouble()
+	return x.coerceAtMost(y).toInt()
+}
+
+/**
+ * Check all 8 possibilities.
+ */
+
+fun checkSouth(
+	current: BoardData,
+	list: List<BoardData>
+): List<BoardData> {
+	println("-------------------- checkSouth")
+	println("current: $current")
+	println("list: $list")
+	val col = current.position.col
+	val row = current.position.row
+	val state = current.cellState
+
+	var itemRow = row + 1
+
+	var differentColor = true
+	val visited = mutableListOf<BoardData>()
+	while (itemRow < GRID_SIZE && differentColor) {
+		val item = list.find {
+			it.position.col == col && it.position.row == itemRow
+		}
+		if (item != null) {
+			if (item.cellState == state) {
+				println("The item at [$itemRow, $col] has the same color of our current item: ${state.name}")
+				differentColor = false
+			} else {
+				println("The item at [$itemRow, $col] has a different color than our current item. " +
+					"This color is ${item.cellState.name}")
+				visited.add(item)
+				itemRow++
+			}
+		} else {
+			println("There's not an item on position [$itemRow, $col].")
+			break
+		}
+	}
+
+	// Found pieces to be eaten.
+	if (visited.size > 0) {
+		visited.forEach {
+			println("visited: $it")
+		}
+	}
+	return visited
+}
+
 fun checkNorth(
 	current: BoardData,
 	list: List<BoardData>
-) {
+): List<BoardData> {
+	println("-------------------- checkNorth")
 	println("current: $current")
 	println("list: $list")
 	val col = current.position.col
@@ -58,6 +125,7 @@ fun checkNorth(
 	val state = current.cellState
 
 	var itemRow = row - 1
+
 	var differentColor = true
 	val visited = mutableListOf<BoardData>()
 	while (itemRow >= 0 && differentColor) {
@@ -80,28 +148,11 @@ fun checkNorth(
 		}
 	}
 
-	// Found pieces to be eaten
+	// Found pieces to be eaten.
 	if (visited.size > 0) {
 		visited.forEach {
 			println("visited: $it")
 		}
 	}
-}
-
-fun isDiagonal(
-	current: Position,
-	next: Position
-): Boolean {
-	val x = (next.col - current.col).absoluteValue
-	val y = (next.row - current.row).absoluteValue
-	return x == y
-}
-
-fun differenceBetweenTwoPoints(
-	current: Position,
-	next: Position
-): Int {
-	val x = ((next.col - current.col).absoluteValue).toDouble()
-	val y = ((next.row - current.row).absoluteValue).toDouble()
-	return x.coerceAtMost(y).toInt()
+	return visited
 }

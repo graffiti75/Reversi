@@ -46,7 +46,6 @@ import br.android.cericatto.reversi.ui.UiEvent
 import br.android.cericatto.reversi.ui.theme.boardGreen
 import br.android.cericatto.reversi.ui.theme.boardMustard
 import br.android.cericatto.reversi.ui.theme.orange
-import br.android.cericatto.reversi.ui.theme.teal
 import kotlinx.coroutines.launch
 
 @Composable
@@ -152,7 +151,7 @@ fun GridCanvas(
 	onAction: (BoardAction) -> Unit,
 	state: BoardState,
 	canvasSize: Dp = 300.dp,
-	gridSize: Int = 8,
+	gridSize: Int = GRID_SIZE,
 	lineColor: Color = Color.Black,
 	lineThickness: Float = 5f
 ) {
@@ -238,7 +237,7 @@ fun GridCanvas(
 				)
 				onAction(BoardAction.OnBoardClicked(position = Position(pair.first, pair.second)))
 				drawCircle(
-					color = Color.Black,
+					color = Color.White,
 					radius = radius,
 					center = Offset(center.x, center.y),
 					style = Fill
@@ -260,7 +259,7 @@ fun GridScreenPreview() {
 		modifier = Modifier,
 		onAction = {},
 		state = BoardState(),
-		gridSize = 8,
+		gridSize = GRID_SIZE,
 		lineColor = Color.Black,
 		lineThickness = 2f
 	)

@@ -2,8 +2,6 @@ package br.android.cericatto.reversi.ui.board
 
 import android.content.Context
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.findViewTreeLifecycleOwner
-import androidx.lifecycle.viewModelScope
 import br.android.cericatto.reversi.ui.UiEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
@@ -12,7 +10,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
@@ -42,7 +39,7 @@ class BoardViewModel @Inject constructor(
 		if (dataAlreadyInList == null) {
 			val newBoardData = _state.value.boardData.toMutableList()
 			val newData = BoardData(
-				cellState = CellState.BLACK,
+				cellState = CellState.WHITE,
 				position = position,
 				filled = true
 			)
@@ -57,7 +54,51 @@ class BoardViewModel @Inject constructor(
 	}
 
 	private fun onButtonClicked() {
-		/*
+		// North.
+		val north = checkMovement(Movement.NORTH)
+		if (north.isNotEmpty()) {
+			_state.update { state ->
+				state.copy(
+					boardData = north
+				)
+			}
+		}
+
+		// South.
+		val south = checkMovement(Movement.SOUTH)
+		if (south.isNotEmpty()) {
+			_state.update { state ->
+				state.copy(
+					boardData = south
+				)
+			}
+		}
+
+	}
+
+	private fun checkMovement(movement: Movement): List<BoardData> {
+		val last = _state.value.last!!
+		val list = _state.value.boardData
+		val data = when (movement) {
+			Movement.NORTH -> checkNorth(last, list)
+			Movement.SOUTH -> checkSouth(last, list)
+		}
+
+		var updatedList: List<BoardData> = emptyList()
+		if (data.isNotEmpty()) {
+			val set = data.map { it.position }.toSet()
+			updatedList = _state.value.boardData.map { item ->
+				if (item.position in set) {
+					item.copy(cellState = _state.value.currenPlayer)
+				} else {
+					item
+				}
+			}
+		}
+		return updatedList
+	}
+
+	private fun checkDistances() {
 		_state.value.last?.let { last ->
 			_state.value.boardData.forEach { item ->
 				val distance = differenceBetweenTwoPoints(
@@ -66,10 +107,5 @@ class BoardViewModel @Inject constructor(
 				println("----- ($item) distance: $distance")
 			}
 		}
-		*/
-		checkNorth(
-			_state.value.last!!,
-			_state.value.boardData
-		)
 	}
 }
