@@ -51,35 +51,40 @@ fun checkNorth(
 	current: BoardData,
 	list: List<BoardData>
 ) {
+	println("current: $current")
+	println("list: $list")
 	val col = current.position.col
 	val row = current.position.row
 	val state = current.cellState
-	var itemCol = col - 1
+
+	var itemRow = row - 1
 	var differentColor = true
-	var visited = mutableListOf<BoardData>()
-	while (itemCol >= 0 && differentColor) {
+	val visited = mutableListOf<BoardData>()
+	while (itemRow >= 0 && differentColor) {
 		val item = list.find {
-			it.position.col == itemCol && it.position.row == row
+			it.position.col == col && it.position.row == itemRow
 		}
 		if (item != null) {
 			if (item.cellState == state) {
-				println("The item at [$itemCol, $row] has the same color of our current item: ${state.name}")
+				println("The item at [$itemRow, $col] has the same color of our current item: ${state.name}")
 				differentColor = false
 			} else {
-				println("The item at [$itemCol, $row] has a different color than our current item. " +
+				println("The item at [$itemRow, $col] has a different color than our current item. " +
 					"This color is ${item.cellState.name}")
 				visited.add(item)
-				itemCol--
+				itemRow--
 			}
 		} else {
-			println("There's not item on position [$itemCol, $row].")
+			println("There's not an item on position [$itemRow, $col].")
 			break
 		}
 	}
 
 	// Found pieces to be eaten
 	if (visited.size > 0) {
-
+		visited.forEach {
+			println("visited: $it")
+		}
 	}
 }
 

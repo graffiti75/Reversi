@@ -25,17 +25,13 @@ data class Position(val row: Int, val col: Int)
 data class BoardData(
 	val cellState: CellState = CellState.EMPTY,
 	val position: Position = Position(0, 0),
-	val filled : Boolean = false
+	val filled : Boolean = true
 )
 
 val sampleBoardState = listOf(
 	BoardData(
 		cellState = CellState.BLACK,
-		position = Position(0, 0),
-	),
-	BoardData(
-		cellState = CellState.WHITE,
-		position = Position(0, 1),
+		position = Position(2, 3),
 	),
 	BoardData(
 		cellState = CellState.BLACK,
@@ -44,21 +40,5 @@ val sampleBoardState = listOf(
 	BoardData(
 		cellState = CellState.WHITE,
 		position = Position(3, 3),
-	),
-	BoardData(
-		cellState = CellState.WHITE,
-		position = Position(5, 2),
-	),
-	BoardData(
-		cellState = CellState.WHITE,
-		position = Position(5, 5),
-	),
-	BoardData(
-		cellState = CellState.BLACK,
-		position = Position(7, 1),
-	),
-	BoardData(
-		cellState = CellState.BLACK,
-		position = Position(7, 7),
 	)
 )

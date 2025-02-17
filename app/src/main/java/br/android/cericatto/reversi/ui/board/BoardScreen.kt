@@ -238,7 +238,7 @@ fun GridCanvas(
 				)
 				onAction(BoardAction.OnBoardClicked(position = Position(pair.first, pair.second)))
 				drawCircle(
-					color = teal,
+					color = Color.Black,
 					radius = radius,
 					center = Offset(center.x, center.y),
 					style = Fill

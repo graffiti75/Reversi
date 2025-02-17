@@ -2,6 +2,8 @@ package br.android.cericatto.reversi.ui.board
 
 import android.content.Context
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.findViewTreeLifecycleOwner
+import androidx.lifecycle.viewModelScope
 import br.android.cericatto.reversi.ui.UiEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
@@ -10,6 +12,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
@@ -35,22 +38,26 @@ class BoardViewModel @Inject constructor(
 	 */
 
 	private fun onBoardClicked(position: Position) {
-		val newBoardData = _state.value.boardData.toMutableList()
-		val newData = BoardData(
-			cellState = CellState.BLACK,
-			position = position,
-			filled = true
-		)
-		newBoardData += newData
-		_state.update { state ->
-			state.copy(
-				boardData = newBoardData,
-				last = newData
+		val dataAlreadyInList = _state.value.boardData.find { it.position == position }
+		if (dataAlreadyInList == null) {
+			val newBoardData = _state.value.boardData.toMutableList()
+			val newData = BoardData(
+				cellState = CellState.BLACK,
+				position = position,
+				filled = true
 			)
+			newBoardData += newData
+			_state.update { state ->
+				state.copy(
+					boardData = newBoardData,
+					last = newData
+				)
+			}
 		}
 	}
 
 	private fun onButtonClicked() {
+		/*
 		_state.value.last?.let { last ->
 			_state.value.boardData.forEach { item ->
 				val distance = differenceBetweenTwoPoints(
@@ -59,5 +66,10 @@ class BoardViewModel @Inject constructor(
 				println("----- ($item) distance: $distance")
 			}
 		}
+		*/
+		checkNorth(
+			_state.value.last!!,
+			_state.value.boardData
+		)
 	}
 }
