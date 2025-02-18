@@ -1,11 +1,13 @@
 package br.android.cericatto.reversi.ui.board
 
+import kotlin.random.Random
+
 const val GRID_SIZE = 8
 
 data class BoardState(
 	val boardData : List<BoardData> = sampleBoardState,
 	val last : BoardData? = null,
-	val currenPlayer: CellState = CellState.WHITE
+	val currenPlayer: CellState = CellState.BLACK
 )
 
 /**
@@ -22,13 +24,13 @@ enum class CellState {
  */
 enum class Movement {
 	NORTH,
-//	NORTHEAST,
-//	EAST,
-//	SOUTHEAST,
+	NORTHEAST,
+	EAST,
+	SOUTHEAST,
 	SOUTH,
-//	SOUTHWEST,
-//	WEST,
-//	NORTHWEST
+	SOUTHWEST,
+	WEST,
+	NORTHWEST
 }
 
 /**
@@ -45,6 +47,30 @@ data class BoardData(
 	val filled : Boolean = true,
 )
 
+val sampleBoardState = randomBoardStates()
+
+private fun randomBoardStates(
+	seed: Int = 12
+): List<BoardData> {
+	val mutableList = mutableListOf<BoardData>()
+	var i = 0
+	while (i < seed) {
+		val item = BoardData(
+			cellState = if (Random.nextBoolean()) CellState.BLACK else CellState.WHITE,
+			position = Position(
+				row = Random.nextInt(0, GRID_SIZE),
+				col = Random.nextInt(0, GRID_SIZE)
+			),
+		)
+		if (!mutableList.contains(item)) {
+			mutableList.add(item)
+			i++
+		}
+	}
+	return mutableList
+}
+
+/*
 val sampleBoardState = listOf(
 	BoardData(
 		cellState = CellState.BLACK,
@@ -69,6 +95,18 @@ val sampleBoardState = listOf(
 	BoardData(
 		cellState = CellState.WHITE,
 		position = Position(5, 3),
+	),
+	BoardData(
+		cellState = CellState.WHITE,
+		position = Position(2, 6),
+	),
+	BoardData(
+		cellState = CellState.WHITE,
+		position = Position(3, 6),
+	),
+	BoardData(
+		cellState = CellState.BLACK,
+		position = Position(4, 6)
 	)
-
 )
+*/

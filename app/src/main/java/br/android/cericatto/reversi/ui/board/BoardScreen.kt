@@ -237,7 +237,7 @@ fun GridCanvas(
 				)
 				onAction(BoardAction.OnBoardClicked(position = Position(pair.first, pair.second)))
 				drawCircle(
-					color = Color.White,
+					color = if (state.currenPlayer == CellState.BLACK) Color.Black else Color.White,
 					radius = radius,
 					center = Offset(center.x, center.y),
 					style = Fill

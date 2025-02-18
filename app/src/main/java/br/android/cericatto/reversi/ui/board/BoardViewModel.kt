@@ -39,7 +39,7 @@ class BoardViewModel @Inject constructor(
 		if (dataAlreadyInList == null) {
 			val newBoardData = _state.value.boardData.toMutableList()
 			val newData = BoardData(
-				cellState = CellState.WHITE,
+				cellState = _state.value.currenPlayer,
 				position = position,
 				filled = true
 			)
@@ -54,26 +54,25 @@ class BoardViewModel @Inject constructor(
 	}
 
 	private fun onButtonClicked() {
-		// North.
-		val north = checkMovement(Movement.NORTH)
-		if (north.isNotEmpty()) {
+		addMovementPieces(Movement.NORTH)
+		addMovementPieces(Movement.NORTHEAST)
+		addMovementPieces(Movement.EAST)
+		addMovementPieces(Movement.SOUTHEAST)
+		addMovementPieces(Movement.SOUTH)
+		addMovementPieces(Movement.SOUTHWEST)
+		addMovementPieces(Movement.WEST)
+		addMovementPieces(Movement.NORTHWEST)
+	}
+
+	private fun addMovementPieces(movement: Movement) {
+		val list = checkMovement(movement)
+		if (list.isNotEmpty()) {
 			_state.update { state ->
 				state.copy(
-					boardData = north
+					boardData = list
 				)
 			}
 		}
-
-		// South.
-		val south = checkMovement(Movement.SOUTH)
-		if (south.isNotEmpty()) {
-			_state.update { state ->
-				state.copy(
-					boardData = south
-				)
-			}
-		}
-
 	}
 
 	private fun checkMovement(movement: Movement): List<BoardData> {
@@ -81,7 +80,13 @@ class BoardViewModel @Inject constructor(
 		val list = _state.value.boardData
 		val data = when (movement) {
 			Movement.NORTH -> checkNorth(last, list)
+			Movement.NORTHEAST -> checkNortheast(last, list)
+			Movement.EAST -> checkEast(last, list)
+			Movement.SOUTHEAST -> checkSoutheast(last, list)
 			Movement.SOUTH -> checkSouth(last, list)
+			Movement.SOUTHWEST -> checkSouthwest(last, list)
+			Movement.WEST -> checkWest(last, list)
+			Movement.NORTHWEST -> checkNorthwest(last, list)
 		}
 
 		var updatedList: List<BoardData> = emptyList()
