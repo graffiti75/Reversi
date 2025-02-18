@@ -1,12 +1,12 @@
 package br.android.cericatto.reversi.ui.board
 
 import android.content.Context
+import androidx.compose.ui.geometry.Offset
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import br.android.cericatto.reversi.ui.UiEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -28,8 +28,8 @@ class BoardViewModel @Inject constructor(
 
 	fun onAction(action: BoardAction) {
 		when (action) {
-			is BoardAction.OnBoardClicked -> onBoardClicked(action.position)
-//			is BoardAction.OnButtonClicked -> onButtonClicked()
+			is BoardAction.OnMovementPlayed -> onMovementPlayed(action.boardPosition)
+			is BoardAction.OnUpdateClickedPosition -> onUpdateClickedPosition(action.offsetPosition)
 		}
 	}
 
@@ -37,26 +37,36 @@ class BoardViewModel @Inject constructor(
 	 * State Methods
 	 */
 
-	private fun onBoardClicked(position: Position) {
+	private fun onUpdateClickedPosition(position: Offset?) {
+		_state.update { state ->
+			state.copy(
+				clickedPosition = position,
+			)
+		}
+	}
+
+	private fun onMovementPlayed(boardPosition: BoardPosition) {
 		viewModelScope.launch {
-			val dataAlreadyInList = _state.value.boardData.find { it.position == position }
+			val dataAlreadyInList = _state.value.boardData.find { it.boardPosition == boardPosition }
 			if (dataAlreadyInList == null) {
 				val newBoardData = _state.value.boardData.toMutableList()
-				val newData = BoardData(
-					cellState = _state.value.currentPlayer,
-					position = position,
+				val round = _state.value.round + 1
+				val clicked = BoardData(
+					cellState = if (round % 2 == 0) CellState.BLACK else CellState.WHITE,
+					boardPosition = boardPosition,
 					filled = true
 				)
-				newBoardData += newData
+				newBoardData += clicked
 				_state.update { state ->
 					state.copy(
 						boardData = newBoardData,
-						last = newData
+						last = clicked
 					)
 				}
-				delay(100)
 				checkAllMovements()
 				updateGameScore()
+				updateRound(round)
+				onUpdateClickedPosition(null)
 			}
 		}
 	}
@@ -101,16 +111,25 @@ class BoardViewModel @Inject constructor(
 
 		var updatedList: List<BoardData> = emptyList()
 		if (data.isNotEmpty()) {
-			val set = data.map { it.position }.toSet()
+			val set = data.map { it.boardPosition }.toSet()
+			val round = _state.value.round
 			updatedList = _state.value.boardData.map { item ->
-				if (item.position in set) {
-					item.copy(cellState = _state.value.currentPlayer)
+				if (item.boardPosition in set) {
+					item.copy(cellState = last.cellState)
 				} else {
 					item
 				}
 			}
 		}
 		return updatedList
+	}
+
+	private fun updateRound(newRound: Int) {
+		_state.update { state ->
+			state.copy(
+				round = newRound
+			)
+		}
 	}
 
 	private fun updateGameScore() {
@@ -126,7 +145,7 @@ class BoardViewModel @Inject constructor(
 		_state.value.last?.let { last ->
 			_state.value.boardData.forEach { item ->
 				val distance = differenceBetweenTwoPoints(
-					last.position, item.position
+					last.boardPosition, item.boardPosition
 				)
 				println("----- ($item) distance: $distance")
 			}

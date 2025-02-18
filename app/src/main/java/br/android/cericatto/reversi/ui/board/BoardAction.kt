@@ -1,6 +1,8 @@
 package br.android.cericatto.reversi.ui.board
 
+import androidx.compose.ui.geometry.Offset
+
 sealed interface BoardAction {
-	data class OnBoardClicked(val position: Position) : BoardAction
-//	data object OnButtonClicked : BoardAction
+	data class OnMovementPlayed(val boardPosition: BoardPosition) : BoardAction
+	data class OnUpdateClickedPosition(val offsetPosition: Offset) : BoardAction
 }

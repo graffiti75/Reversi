@@ -20,7 +20,7 @@ fun boardPositionIsFilled(
 	val col = pair.second
 	val row = pair.first
 	val contains = sampleBoardState.find {
-		it.position.col == col && it.position.row == row
+		it.boardPosition.col == col && it.boardPosition.row == row
 	}
 	return (contains != null)
 }
@@ -48,8 +48,8 @@ fun calculateCenterClickedPosition(
 }
 
 fun isDiagonal(
-	current: Position,
-	next: Position
+	current: BoardPosition,
+	next: BoardPosition
 ): Boolean {
 	val x = (next.col - current.col).absoluteValue
 	val y = (next.row - current.row).absoluteValue
@@ -57,8 +57,8 @@ fun isDiagonal(
 }
 
 fun differenceBetweenTwoPoints(
-	current: Position,
-	next: Position
+	current: BoardPosition,
+	next: BoardPosition
 ): Int {
 	val x = ((next.col - current.col).absoluteValue).toDouble()
 	val y = ((next.row - current.row).absoluteValue).toDouble()
@@ -96,8 +96,8 @@ fun checkBoard(
 	println("current: $current")
 	println("list: $list")
 
-	val startCol = current.position.col
-	val startRow = current.position.row
+	val startCol = current.boardPosition.col
+	val startRow = current.boardPosition.row
 	val state = current.cellState
 
 	var itemCol = startCol + direction.colModifier
@@ -109,7 +109,7 @@ fun checkBoard(
 	// Continue while we're within board bounds and haven't found a same-colored piece.
 	while (isValidPosition(itemRow, itemCol) && differentColor) {
 		val item = list.find {
-			it.position.col == itemCol && it.position.row == itemRow
+			it.boardPosition.col == itemCol && it.boardPosition.row == itemRow
 		}
 
 		if (item != null) {

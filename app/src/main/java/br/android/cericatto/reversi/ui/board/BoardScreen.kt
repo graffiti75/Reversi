@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
@@ -23,7 +24,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -50,7 +50,6 @@ import br.android.cericatto.reversi.ui.UiEvent
 import br.android.cericatto.reversi.ui.theme.boardGreen
 import br.android.cericatto.reversi.ui.theme.boardMustard
 import br.android.cericatto.reversi.ui.theme.orange
-import br.android.cericatto.reversi.ui.theme.teal
 import kotlinx.coroutines.launch
 
 @Composable
@@ -101,7 +100,6 @@ fun BoardScreen(
 
 @Composable
 private fun BoardMainContent(
-	modifier: Modifier,
 	onAction: (BoardAction) -> Unit,
 	state: BoardState
 ) {
@@ -127,15 +125,7 @@ private fun BoardMainContent(
 				.wrapContentHeight()
 				.padding(vertical = 10.dp)
 		) {
-			Text(
-				text = "Black",
-				style = TextStyle(
-					fontSize = 24.sp,
-					fontWeight = FontWeight.Bold,
-					textAlign = TextAlign.Center
-				),
-				modifier = Modifier.weight(1f)
-			)
+			PlayerText()
 			ScoreText(
 				text = state.score.black.toString(),
 				backgroundColor = Color.Black,
@@ -143,15 +133,9 @@ private fun BoardMainContent(
 			)
 			Spacer(modifier = Modifier.size(20.dp))
 			ScoreText(text = state.score.white.toString())
-			Text(
+			PlayerText(
 				text = "White",
-				style = TextStyle(
-					fontSize = 24.sp,
-					fontWeight = FontWeight.Bold,
-					textAlign = TextAlign.Center,
-					color = Color.White
-				),
-				modifier = Modifier.weight(1f)
+				textColor = Color.White
 			)
 		}
 		Box(
@@ -185,28 +169,23 @@ fun GridCanvas(
 	lineColor: Color = Color.Black,
 	lineThickness: Float = 5f
 ) {
-	var clickPosition by remember { mutableStateOf<Offset?>(null) }
 	var radius by remember { mutableFloatStateOf(0f) }
 	var cellSize by remember { mutableFloatStateOf(0f) }
 
-	// We create a squared canvas with equal width and height.
+	// Squared Canvas with equal width and height.
 	Canvas(
 		modifier = modifier.width(canvasSize)
 			.aspectRatio(1f)
 			.pointerInput(Unit) {
 				detectTapGestures { offset ->
-					clickPosition = offset
+					onAction(BoardAction.OnUpdateClickedPosition(offset))
 				}
 			}
 	) {
 		val canvasWidth = size.width
 		val canvasHeight = size.height
-//		println("canvasWidth: $canvasWidth")
-//		println("canvasHeight: $canvasHeight")
-
 		// Calculate the cell size based on the canvas dimensions.
 		cellSize = canvasWidth / gridSize
-//		println("cellSize: $cellSize")
 
 		// Draw vertical lines.
 		for (i in 0..gridSize) {
@@ -233,14 +212,14 @@ fun GridCanvas(
 		// Calculate the radius (slightly smaller than the cell).
 		radius = cellSize * 0.45f
 
-		// Draw circles based on the board state.
+		// Draw Circles based on the board state.
 		state.boardData.forEach { item ->
-			println("[GridCanvas] position: ${item.position}, color: ${item.cellState.name}")
+			println("[GridCanvas] position: ${item.boardPosition}, color: ${item.cellState.name}")
 			if (item.cellState != CellState.EMPTY) {
 				val center = centerPosition(
 					cellSize = cellSize,
-					row = item.position.row,
-					col = item.position.col
+					row = item.boardPosition.row,
+					col = item.boardPosition.col
 				)
 				drawCircle(
 					color = if (item.cellState == CellState.BLACK) Color.Black else Color.White,
@@ -251,8 +230,8 @@ fun GridCanvas(
 			}
 		}
 
-		// Draw a visual indicator for the current click position
-		clickPosition?.let { position ->
+		// Draw a Circle for the current clicked position.
+		state.clickedPosition?.let { position ->
 			val center = calculateCenterClickedPosition(
 				cellSize = cellSize,
 				position = position
@@ -268,22 +247,39 @@ fun GridCanvas(
 				)
 				println("clickPosition: $pair")
 				drawCircle(
-					color = if (state.currentPlayer == CellState.BLACK) Color.Black else Color.White,
+					color = if (state.last.cellState == CellState.BLACK) Color.Black else Color.White,
 					radius = radius,
 					center = Offset(center.x, center.y),
 					style = Fill
 				)
-				onAction(BoardAction.OnBoardClicked(position = Position(pair.first, pair.second)))
+				onAction(BoardAction.OnMovementPlayed(boardPosition = BoardPosition(pair.first, pair.second)))
 			}
 		}
 	}
 }
 
 @Composable
+private fun RowScope.PlayerText(
+	text: String = "Black",
+	textColor: Color = Color.Black
+) {
+	Text(
+		text = text,
+		style = TextStyle(
+			fontSize = 24.sp,
+			fontWeight = FontWeight.Bold,
+			textAlign = TextAlign.Center,
+			color = textColor
+		),
+		modifier = Modifier.weight(1f)
+	)
+}
+
+@Composable
 private fun ScoreText(
 	text: String = " 0 ",
 	textColor: Color = Color.Black,
-	backgroundColor: Color = Color.White,
+	backgroundColor: Color = Color.White
 ) {
 	val fixed = if (text.length < 2) " $text " else text
 	Text(
@@ -328,7 +324,6 @@ private fun BoardScreenPreview() {
 @Composable
 private fun BoardMainContentPreview() {
 	BoardMainContent(
-		modifier = Modifier,
 		onAction = {},
 		state = BoardState()
 	)
