@@ -50,7 +50,7 @@ data class BoardData(
 val sampleBoardState = randomBoardStates()
 
 private fun randomBoardStates(
-	seed: Int = 12
+	seed: Int = 18
 ): List<BoardData> {
 	val mutableList = mutableListOf<BoardData>()
 	var i = 0
@@ -62,11 +62,13 @@ private fun randomBoardStates(
 				col = Random.nextInt(0, GRID_SIZE)
 			),
 		)
-		if (!mutableList.contains(item)) {
+		val set = mutableList.map { it.position }.toSet()
+		if (item.position !in set) {
 			mutableList.add(item)
 			i++
 		}
 	}
+	println("i: $i")
 	return mutableList
 }
 

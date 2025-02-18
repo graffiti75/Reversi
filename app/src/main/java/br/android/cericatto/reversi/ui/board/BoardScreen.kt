@@ -111,6 +111,7 @@ private fun BoardMainContent(
 			.size(width)
 			.padding(padding)
 	) {
+		/*
 		Text(
 			text = "Click here",
 			style = TextStyle(
@@ -124,6 +125,7 @@ private fun BoardMainContent(
 					onAction(BoardAction.OnButtonClicked)
 				}
 		)
+		 */
 		Box(
 			contentAlignment = Alignment.Center,
 			modifier = Modifier
@@ -159,7 +161,7 @@ fun GridCanvas(
 	var radius by remember { mutableFloatStateOf(0f) }
 	var cellSize by remember { mutableFloatStateOf(0f) }
 
-	// We create a square canvas with equal width and height
+	// We create a squared canvas with equal width and height.
 	Canvas(
 		modifier = modifier.width(canvasSize)
 			.aspectRatio(1f)
@@ -174,11 +176,11 @@ fun GridCanvas(
 //		println("canvasWidth: $canvasWidth")
 //		println("canvasHeight: $canvasHeight")
 
-		// Calculate the cell size based on the canvas dimensions
+		// Calculate the cell size based on the canvas dimensions.
 		cellSize = canvasWidth / gridSize
 //		println("cellSize: $cellSize")
 
-		// Draw vertical lines
+		// Draw vertical lines.
 		for (i in 0..gridSize) {
 			val xPosition = i * cellSize
 			drawLine(
@@ -189,7 +191,7 @@ fun GridCanvas(
 			)
 		}
 
-		// Draw horizontal lines
+		// Draw horizontal lines.
 		for (i in 0..gridSize) {
 			val yPosition = i * cellSize
 			drawLine(
@@ -200,11 +202,12 @@ fun GridCanvas(
 			)
 		}
 
-		// Calculate the radius (slightly smaller than the cell)
+		// Calculate the radius (slightly smaller than the cell).
 		radius = cellSize * 0.45f
 
-		// Draw circles based on the board state
+		// Draw circles based on the board state.
 		state.boardData.forEach { item ->
+			println("[GridCanvas] position: ${item.position}, color: ${item.cellState.name}")
 			if (item.cellState != CellState.EMPTY) {
 				val center = centerPosition(
 					cellSize = cellSize,
@@ -235,14 +238,14 @@ fun GridCanvas(
 					cellSize = cellSize,
 					position = position
 				)
-				onAction(BoardAction.OnBoardClicked(position = Position(pair.first, pair.second)))
+				println("clickPosition: $pair")
 				drawCircle(
 					color = if (state.currenPlayer == CellState.BLACK) Color.Black else Color.White,
 					radius = radius,
 					center = Offset(center.x, center.y),
 					style = Fill
 				)
-
+				onAction(BoardAction.OnBoardClicked(position = Position(pair.first, pair.second)))
 			}
 		}
 	}

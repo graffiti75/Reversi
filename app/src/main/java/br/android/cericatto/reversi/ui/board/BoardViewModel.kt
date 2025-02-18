@@ -2,14 +2,17 @@ package br.android.cericatto.reversi.ui.board
 
 import android.content.Context
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import br.android.cericatto.reversi.ui.UiEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
@@ -26,7 +29,7 @@ class BoardViewModel @Inject constructor(
 	fun onAction(action: BoardAction) {
 		when (action) {
 			is BoardAction.OnBoardClicked -> onBoardClicked(action.position)
-			is BoardAction.OnButtonClicked -> onButtonClicked()
+//			is BoardAction.OnButtonClicked -> onButtonClicked()
 		}
 	}
 
@@ -35,25 +38,31 @@ class BoardViewModel @Inject constructor(
 	 */
 
 	private fun onBoardClicked(position: Position) {
-		val dataAlreadyInList = _state.value.boardData.find { it.position == position }
-		if (dataAlreadyInList == null) {
-			val newBoardData = _state.value.boardData.toMutableList()
-			val newData = BoardData(
-				cellState = _state.value.currenPlayer,
-				position = position,
-				filled = true
-			)
-			newBoardData += newData
-			_state.update { state ->
-				state.copy(
-					boardData = newBoardData,
-					last = newData
+		viewModelScope.launch {
+			val dataAlreadyInList = _state.value.boardData.find { it.position == position }
+			if (dataAlreadyInList == null) {
+				val newBoardData = _state.value.boardData.toMutableList()
+				val newData = BoardData(
+					cellState = _state.value.currenPlayer,
+					position = position,
+					filled = true
 				)
+				newBoardData += newData
+				_state.update { state ->
+					state.copy(
+						boardData = newBoardData,
+						last = newData
+					)
+				}
+				delay(100)
+				checkAllMovements()
 			}
 		}
 	}
 
-	private fun onButtonClicked() {
+	private fun checkAllMovements() {
+		println("==================================================\n")
+		println("==================================================\n")
 		addMovementPieces(Movement.NORTH)
 		addMovementPieces(Movement.NORTHEAST)
 		addMovementPieces(Movement.EAST)

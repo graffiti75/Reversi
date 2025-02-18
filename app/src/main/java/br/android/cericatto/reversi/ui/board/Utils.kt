@@ -124,11 +124,15 @@ fun checkBoard(
 		}
 	}
 
+	if (!isValidPosition(itemRow, itemCol)) return emptyList()
+
 	// Log found pieces to be captured.
 	if (visited.isNotEmpty()) {
 		visited.forEach {
 			println("visited: $it")
 		}
+	} else{
+		println("visited is empty!")
 	}
 	return visited
 }
