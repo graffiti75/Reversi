@@ -65,6 +65,11 @@ fun differenceBetweenTwoPoints(
 	return x.coerceAtMost(y).toInt()
 }
 
+fun calculateScore(list: List<BoardData>) = Score(
+	black = list.count { it.cellState == CellState.BLACK },
+	white = list.count { it.cellState == CellState.WHITE }
+)
+
 /**
  * Represents a direction to check on the board using coordinate modifiers.
  *

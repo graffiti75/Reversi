@@ -43,7 +43,7 @@ class BoardViewModel @Inject constructor(
 			if (dataAlreadyInList == null) {
 				val newBoardData = _state.value.boardData.toMutableList()
 				val newData = BoardData(
-					cellState = _state.value.currenPlayer,
+					cellState = _state.value.currentPlayer,
 					position = position,
 					filled = true
 				)
@@ -56,6 +56,7 @@ class BoardViewModel @Inject constructor(
 				}
 				delay(100)
 				checkAllMovements()
+				updateGameScore()
 			}
 		}
 	}
@@ -103,13 +104,22 @@ class BoardViewModel @Inject constructor(
 			val set = data.map { it.position }.toSet()
 			updatedList = _state.value.boardData.map { item ->
 				if (item.position in set) {
-					item.copy(cellState = _state.value.currenPlayer)
+					item.copy(cellState = _state.value.currentPlayer)
 				} else {
 					item
 				}
 			}
 		}
 		return updatedList
+	}
+
+	private fun updateGameScore() {
+		val updated = calculateScore(_state.value.boardData)
+		_state.update { state ->
+			state.copy(
+				score = updated
+			)
+		}
 	}
 
 	private fun checkDistances() {

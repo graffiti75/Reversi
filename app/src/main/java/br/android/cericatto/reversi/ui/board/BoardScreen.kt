@@ -3,16 +3,19 @@ package br.android.cericatto.reversi.ui.board
 import android.annotation.SuppressLint
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
@@ -34,6 +37,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -46,6 +50,7 @@ import br.android.cericatto.reversi.ui.UiEvent
 import br.android.cericatto.reversi.ui.theme.boardGreen
 import br.android.cericatto.reversi.ui.theme.boardMustard
 import br.android.cericatto.reversi.ui.theme.orange
+import br.android.cericatto.reversi.ui.theme.teal
 import kotlinx.coroutines.launch
 
 @Composable
@@ -111,21 +116,44 @@ private fun BoardMainContent(
 			.size(width)
 			.padding(padding)
 	) {
-		/*
-		Text(
-			text = "Click here",
-			style = TextStyle(
-				fontSize = 30.sp,
-				fontWeight = FontWeight.Bold,
-				color = Color.White
-			),
-			modifier = Modifier.background(orange)
-				.padding(10.dp)
-				.clickable {
-					onAction(BoardAction.OnButtonClicked)
-				}
-		)
-		 */
+		Row(
+			verticalAlignment = Alignment.CenterVertically,
+			horizontalArrangement = Arrangement.Center,
+			modifier = Modifier.background(
+					color = boardMustard,
+					shape = RoundedCornerShape(20.dp)
+				)
+				.fillMaxWidth()
+				.wrapContentHeight()
+				.padding(vertical = 10.dp)
+		) {
+			Text(
+				text = "Black",
+				style = TextStyle(
+					fontSize = 24.sp,
+					fontWeight = FontWeight.Bold,
+					textAlign = TextAlign.Center
+				),
+				modifier = Modifier.weight(1f)
+			)
+			ScoreText(
+				text = state.score.black.toString(),
+				backgroundColor = Color.Black,
+				textColor = Color.White
+			)
+			Spacer(modifier = Modifier.size(20.dp))
+			ScoreText(text = state.score.white.toString())
+			Text(
+				text = "White",
+				style = TextStyle(
+					fontSize = 24.sp,
+					fontWeight = FontWeight.Bold,
+					textAlign = TextAlign.Center,
+					color = Color.White
+				),
+				modifier = Modifier.weight(1f)
+			)
+		}
 		Box(
 			contentAlignment = Alignment.Center,
 			modifier = Modifier
@@ -240,7 +268,7 @@ fun GridCanvas(
 				)
 				println("clickPosition: $pair")
 				drawCircle(
-					color = if (state.currenPlayer == CellState.BLACK) Color.Black else Color.White,
+					color = if (state.currentPlayer == CellState.BLACK) Color.Black else Color.White,
 					radius = radius,
 					center = Offset(center.x, center.y),
 					style = Fill
@@ -251,8 +279,27 @@ fun GridCanvas(
 	}
 }
 
-fun checkNeighbors() {
-	// TODO
+@Composable
+private fun ScoreText(
+	text: String = " 0 ",
+	textColor: Color = Color.Black,
+	backgroundColor: Color = Color.White,
+) {
+	val fixed = if (text.length < 2) " $text " else text
+	Text(
+		text = fixed,
+		style = TextStyle(
+			fontSize = 20.sp,
+			fontWeight = FontWeight.Bold,
+			color = textColor,
+			textAlign = TextAlign.Center
+		),
+		modifier = Modifier.background(
+			color = backgroundColor,
+			shape = RoundedCornerShape(20.dp)
+		)
+		.padding(10.dp)
+	)
 }
 
 @Preview
@@ -284,5 +331,14 @@ private fun BoardMainContentPreview() {
 		modifier = Modifier,
 		onAction = {},
 		state = BoardState()
+	)
+}
+
+@Preview
+@Composable
+private fun ScoreTextPreview() {
+	ScoreText(
+		backgroundColor = orange,
+		textColor = Color.Black
 	)
 }

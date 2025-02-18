@@ -4,10 +4,16 @@ import kotlin.random.Random
 
 const val GRID_SIZE = 8
 
+data class Score(
+	val black: Int = 0,
+	val white: Int = 0
+)
+
 data class BoardState(
 	val boardData : List<BoardData> = sampleBoardState,
 	val last : BoardData? = null,
-	val currenPlayer: CellState = CellState.BLACK
+	val currentPlayer: CellState = CellState.BLACK,
+	val score: Score = Score()
 )
 
 /**
