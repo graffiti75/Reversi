@@ -30,20 +30,13 @@ class BoardViewModel @Inject constructor(
 		when (action) {
 			is BoardAction.OnMovementPlayed -> onMovementPlayed(action.boardPosition)
 			is BoardAction.OnUpdateClickedPosition -> onUpdateClickedPosition(action.offsetPosition)
+			is BoardAction.OnUndoButtonClicked -> onUndoButtonClicked()
 		}
 	}
 
 	/**
-	 * State Methods
+	 * Action Methods
 	 */
-
-	private fun onUpdateClickedPosition(position: Offset?) {
-		_state.update { state ->
-			state.copy(
-				clickedPosition = position,
-			)
-		}
-	}
 
 	private fun onMovementPlayed(boardPosition: BoardPosition) {
 		viewModelScope.launch {
@@ -52,7 +45,7 @@ class BoardViewModel @Inject constructor(
 				val newBoardData = _state.value.boardData.toMutableList()
 				val round = _state.value.round + 1
 				val clicked = BoardCell(
-					cellState = if (round % 2 == 0) CellState.BLACK else CellState.WHITE,
+					cellState = if (round % 2 == 1) CellState.BLACK else CellState.WHITE,
 					boardPosition = boardPosition,
 					filled = true
 				)
@@ -67,7 +60,7 @@ class BoardViewModel @Inject constructor(
 				updateGameScore()
 				updateRound(round)
 				onUpdateClickedPosition(null)
-				updateGameHistory(round)
+				updateGameHistory()
 			}
 		}
 	}
@@ -124,12 +117,38 @@ class BoardViewModel @Inject constructor(
 		return updatedList
 	}
 
-	private fun updateGameHistory(round: Int) {
-		val boardData = _state.value.boardData.toMutableList()
-		val newHistory = GameHistory(round = round, board = boardData)
+	private fun onUpdateClickedPosition(position: Offset?) {
 		_state.update { state ->
 			state.copy(
-				history = newHistory
+				clickedPosition = position,
+			)
+		}
+	}
+
+	private fun onUndoButtonClicked() {
+		val round = _state.value.round - 1
+		val history = _state.value.history
+		val undoHistory = history.slice(0 .. round)
+		_state.update { state ->
+			state.copy(
+				round = round,
+				history = undoHistory,
+				boardData = history[round].snapshot
+			)
+		}
+	}
+
+	/**
+	 * State Methods
+	 */
+
+	private fun updateGameHistory() {
+		val boardData = _state.value.boardData
+		val history = _state.value.history
+		val newSnapshot = Snapshot(boardData)
+		_state.update { state ->
+			state.copy(
+				history = history + newSnapshot
 			)
 		}
 	}

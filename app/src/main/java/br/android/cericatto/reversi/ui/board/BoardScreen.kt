@@ -1,8 +1,11 @@
 package br.android.cericatto.reversi.ui.board
 
 import android.annotation.SuppressLint
+import android.content.res.Configuration
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -30,12 +33,14 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -106,10 +111,8 @@ private fun BoardMainContent(
 	onAction: (BoardAction) -> Unit,
 	state: BoardState
 ) {
-	val configuration = LocalConfiguration.current
 	val padding = 5.dp
-	val width = configuration.screenWidthDp.dp
-
+	val width = getCanvasSize()
 	Column(
 		horizontalAlignment = Alignment.CenterHorizontally,
 		verticalArrangement = Arrangement.Center,
@@ -123,11 +126,28 @@ private fun BoardMainContent(
 				fontSize = 24.sp,
 				fontWeight = FontWeight.Bold,
 				textAlign = TextAlign.Center,
-				color = Color.Black
+				color = if (state.history.size > 1) {
+					Color.Black
+				} else {
+					Color.Transparent
+				}
 			),
 			modifier = Modifier.wrapContentWidth()
-				.background(HexagonBackground())
+				.background(
+					HexagonBackground(
+						color = if (state.history.size > 1) {
+							boardMustard
+						} else {
+							Color.Transparent
+						}
+					)
+				)
 				.padding(10.dp)
+				.clickable {
+					if (state.history.size > 1) {
+						onAction(BoardAction.OnUndoButtonClicked)
+					}
+				}
 		)
 		Spacer(modifier = Modifier.size(10.dp))
 		Row(
@@ -285,7 +305,11 @@ fun GridCanvas(
 					center = Offset(center.x, center.y),
 					style = Fill
 				)
-				onAction(BoardAction.OnMovementPlayed(boardPosition = BoardPosition(pair.first, pair.second)))
+				onAction(
+					BoardAction.OnMovementPlayed(
+						boardPosition = BoardPosition(pair.first, pair.second)
+					)
+				)
 			}
 		}
 	}
@@ -329,6 +353,25 @@ private fun ScoreText(
 		)
 		.padding(10.dp)
 	)
+}
+
+@Composable
+fun getCanvasSize(): Dp {
+	val context = LocalContext.current
+	val orientation = context.resources.configuration.orientation
+	val isOrientationLandscape = when (orientation) {
+		Configuration.ORIENTATION_LANDSCAPE -> true
+		else -> false
+	}
+	val configuration = LocalConfiguration.current
+	return if (isOrientationLandscape) {
+		with(LocalDensity.current) {
+			val screenHeight = configuration.screenHeightDp.dp.toPx() * 0.2
+			screenHeight.dp
+		}
+	} else {
+		configuration.screenWidthDp.dp
+	}
 }
 
 @Preview

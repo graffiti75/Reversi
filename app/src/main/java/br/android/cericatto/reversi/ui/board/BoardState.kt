@@ -4,6 +4,7 @@ import androidx.compose.ui.geometry.Offset
 import kotlin.random.Random
 
 const val GRID_SIZE = 8
+const val SEED = 4
 val FIRST_PLAYER = CellState.BLACK
 
 /**
@@ -27,14 +28,14 @@ data class BoardPosition(val row: Int, val col: Int)
 
 data class BoardState(
 	val clickedPosition : Offset? = null,
-	val history: GameHistory = GameHistory(board = sampleBoardState),
+	val history: List<Snapshot> = listOf(Snapshot(sampleBoardState)),
 	val boardData : List<BoardCell> = sampleBoardState,
 	val last : BoardCell = BoardCell(
 		cellState = FIRST_PLAYER,
 		filled = false
 	),
 	val score: Score = Score(),
-	val round: Int = -1
+	val round: Int = 0
 )
 
 /**
@@ -46,15 +47,14 @@ data class BoardCell(
 	val filled : Boolean = true,
 )
 
-data class GameHistory(
-	val round: Int = 0,
-	val board: List<BoardCell> = emptyList()
+data class Snapshot(
+	val snapshot: List<BoardCell>
 )
 
 val sampleBoardState = randomBoardStates()
 
 private fun randomBoardStates(
-	seed: Int = 18
+	seed: Int = SEED
 ): List<BoardCell> {
 	val mutableList = mutableListOf<BoardCell>()
 	var i = 0
