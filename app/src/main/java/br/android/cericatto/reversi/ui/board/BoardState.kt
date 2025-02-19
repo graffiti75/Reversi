@@ -27,8 +27,9 @@ data class BoardPosition(val row: Int, val col: Int)
 
 data class BoardState(
 	val clickedPosition : Offset? = null,
-	val boardData : List<BoardData> = sampleBoardState,
-	val last : BoardData = BoardData(
+	val history: GameHistory = GameHistory(board = sampleBoardState),
+	val boardData : List<BoardCell> = sampleBoardState,
+	val last : BoardCell = BoardCell(
 		cellState = FIRST_PLAYER,
 		filled = false
 	),
@@ -37,23 +38,28 @@ data class BoardState(
 )
 
 /**
- * Data class to control the state of each Board Piece.
+ * Data class to control the state of each Cell Piece.
  */
-data class BoardData(
+data class BoardCell(
 	val cellState: CellState = CellState.EMPTY,
 	val boardPosition: BoardPosition = BoardPosition(0, 0),
 	val filled : Boolean = true,
+)
+
+data class GameHistory(
+	val round: Int = 0,
+	val board: List<BoardCell> = emptyList()
 )
 
 val sampleBoardState = randomBoardStates()
 
 private fun randomBoardStates(
 	seed: Int = 18
-): List<BoardData> {
-	val mutableList = mutableListOf<BoardData>()
+): List<BoardCell> {
+	val mutableList = mutableListOf<BoardCell>()
 	var i = 0
 	while (i < seed) {
-		val item = BoardData(
+		val item = BoardCell(
 			cellState = if (Random.nextBoolean()) CellState.BLACK else CellState.WHITE,
 			boardPosition = BoardPosition(
 				row = Random.nextInt(0, GRID_SIZE),

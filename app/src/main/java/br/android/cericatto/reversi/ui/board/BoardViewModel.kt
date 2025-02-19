@@ -51,7 +51,7 @@ class BoardViewModel @Inject constructor(
 			if (dataAlreadyInList == null) {
 				val newBoardData = _state.value.boardData.toMutableList()
 				val round = _state.value.round + 1
-				val clicked = BoardData(
+				val clicked = BoardCell(
 					cellState = if (round % 2 == 0) CellState.BLACK else CellState.WHITE,
 					boardPosition = boardPosition,
 					filled = true
@@ -67,6 +67,7 @@ class BoardViewModel @Inject constructor(
 				updateGameScore()
 				updateRound(round)
 				onUpdateClickedPosition(null)
+				updateGameHistory(round)
 			}
 		}
 	}
@@ -95,7 +96,7 @@ class BoardViewModel @Inject constructor(
 		}
 	}
 
-	private fun checkMovement(movement: Movement): List<BoardData> {
+	private fun checkMovement(movement: Movement): List<BoardCell> {
 		val last = _state.value.last!!
 		val list = _state.value.boardData
 		val data = when (movement) {
@@ -109,10 +110,9 @@ class BoardViewModel @Inject constructor(
 			Movement.NORTHWEST -> checkNorthwest(last, list)
 		}
 
-		var updatedList: List<BoardData> = emptyList()
+		var updatedList: List<BoardCell> = emptyList()
 		if (data.isNotEmpty()) {
 			val set = data.map { it.boardPosition }.toSet()
-			val round = _state.value.round
 			updatedList = _state.value.boardData.map { item ->
 				if (item.boardPosition in set) {
 					item.copy(cellState = last.cellState)
@@ -122,6 +122,16 @@ class BoardViewModel @Inject constructor(
 			}
 		}
 		return updatedList
+	}
+
+	private fun updateGameHistory(round: Int) {
+		val boardData = _state.value.boardData.toMutableList()
+		val newHistory = GameHistory(round = round, board = boardData)
+		_state.update { state ->
+			state.copy(
+				history = newHistory
+			)
+		}
 	}
 
 	private fun updateRound(newRound: Int) {

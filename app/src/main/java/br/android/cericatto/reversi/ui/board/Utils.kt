@@ -65,7 +65,7 @@ fun differenceBetweenTwoPoints(
 	return x.coerceAtMost(y).toInt()
 }
 
-fun calculateScore(list: List<BoardData>) = Score(
+fun calculateScore(list: List<BoardCell>) = Score(
 	black = list.count { it.cellState == CellState.BLACK },
 	white = list.count { it.cellState == CellState.WHITE }
 )
@@ -88,10 +88,10 @@ data class Direction(val rowModifier: Int, val colModifier: Int)
  * @return List of pieces that can be captured in the specified direction
  */
 fun checkBoard(
-	current: BoardData,
-	list: List<BoardData>,
+	current: BoardCell,
+	list: List<BoardCell>,
 	direction: Direction
-): List<BoardData> {
+): List<BoardCell> {
 	println("-------------------- checking direction: rowMod=${direction.rowModifier}, colMod=${direction.colModifier}")
 	println("current: $current")
 	println("list: $list")
@@ -104,7 +104,7 @@ fun checkBoard(
 	var itemRow = startRow + direction.rowModifier
 
 	var differentColor = true
-	val visited = mutableListOf<BoardData>()
+	val visited = mutableListOf<BoardCell>()
 
 	// Continue while we're within board bounds and haven't found a same-colored piece.
 	while (isValidPosition(itemRow, itemCol) && differentColor) {
@@ -152,26 +152,26 @@ private fun isValidPosition(row: Int, col: Int): Boolean {
 /**
  * Checks all 8 possibilities.
  */
-fun checkNorth(current: BoardData, list: List<BoardData>): List<BoardData> =
+fun checkNorth(current: BoardCell, list: List<BoardCell>): List<BoardCell> =
 	checkBoard(current, list, Direction(-1, 0))
 
-fun checkNortheast(current: BoardData, list: List<BoardData>): List<BoardData> =
+fun checkNortheast(current: BoardCell, list: List<BoardCell>): List<BoardCell> =
 	checkBoard(current, list, Direction(-1, 1))
 
-fun checkEast(current: BoardData, list: List<BoardData>): List<BoardData> =
+fun checkEast(current: BoardCell, list: List<BoardCell>): List<BoardCell> =
 	checkBoard(current, list, Direction(0, 1))
 
-fun checkSoutheast(current: BoardData, list: List<BoardData>): List<BoardData> =
+fun checkSoutheast(current: BoardCell, list: List<BoardCell>): List<BoardCell> =
 	checkBoard(current, list, Direction(1, 1))
 
-fun checkSouth(current: BoardData, list: List<BoardData>): List<BoardData> =
+fun checkSouth(current: BoardCell, list: List<BoardCell>): List<BoardCell> =
 	checkBoard(current, list, Direction(1, 0))
 
-fun checkSouthwest(current: BoardData, list: List<BoardData>): List<BoardData> =
+fun checkSouthwest(current: BoardCell, list: List<BoardCell>): List<BoardCell> =
 	checkBoard(current, list, Direction(1, -1))
 
-fun checkWest(current: BoardData, list: List<BoardData>): List<BoardData> =
+fun checkWest(current: BoardCell, list: List<BoardCell>): List<BoardCell> =
 	checkBoard(current, list, Direction(0, -1))
 
-fun checkNorthwest(current: BoardData, list: List<BoardData>): List<BoardData> =
+fun checkNorthwest(current: BoardCell, list: List<BoardCell>): List<BoardCell> =
 	checkBoard(current, list, Direction(-1, -1))
