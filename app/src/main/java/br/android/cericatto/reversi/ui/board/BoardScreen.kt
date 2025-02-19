@@ -129,7 +129,7 @@ private fun BoardMainContent(
 				color = if (state.history.size > 1) {
 					Color.Black
 				} else {
-					Color.Transparent
+					Color.Black.copy(alpha = 0.2f)
 				}
 			),
 			modifier = Modifier.wrapContentWidth()
@@ -138,16 +138,20 @@ private fun BoardMainContent(
 						color = if (state.history.size > 1) {
 							boardMustard
 						} else {
-							Color.Transparent
+							boardMustard.copy(alpha = 0.2f)
 						}
 					)
 				)
 				.padding(10.dp)
-				.clickable {
+				.then(
 					if (state.history.size > 1) {
-						onAction(BoardAction.OnUndoButtonClicked)
+						Modifier.clickable {
+							onAction(BoardAction.OnUndoButtonClicked)
+						}
+					} else {
+						Modifier
 					}
-				}
+				)
 		)
 		Spacer(modifier = Modifier.size(10.dp))
 		Row(
