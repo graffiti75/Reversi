@@ -1,62 +1,36 @@
 package br.android.cericatto.reversi.ui.board
 
-import android.annotation.SuppressLint
-import android.content.res.Configuration
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.layout.wrapContentWidth
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import br.android.cericatto.reversi.ObserveAsEvents
 import br.android.cericatto.reversi.navigation.Route
 import br.android.cericatto.reversi.ui.UiEvent
-import br.android.cericatto.reversi.ui.board.common.HexagonBackground
-import br.android.cericatto.reversi.ui.theme.boardGreen
-import br.android.cericatto.reversi.ui.theme.boardMustard
-import br.android.cericatto.reversi.ui.theme.orange
+import br.android.cericatto.reversi.ui.board.common.LandscapeContent
+import br.android.cericatto.reversi.ui.board.common.PortraitContent
+import br.android.cericatto.reversi.ui.board.common.getCanvasSize
+import br.android.cericatto.reversi.ui.board.common.isLandscapeOrientation
 import kotlinx.coroutines.launch
 
 @Composable
@@ -89,14 +63,13 @@ fun BoardScreenRoot(
 	)
 }
 
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun BoardScreen(
+private fun BoardScreen(
 	onAction: (BoardAction) -> Unit,
 	state: BoardState
 ) {
 	Scaffold { innerPadding ->
-		BoardMainContent(
+		MainContent(
 			modifier = Modifier
 				.padding(innerPadding),
 			onAction = onAction,
@@ -106,113 +79,24 @@ fun BoardScreen(
 }
 
 @Composable
-private fun BoardMainContent(
+private fun MainContent(
 	modifier: Modifier,
 	onAction: (BoardAction) -> Unit,
 	state: BoardState
 ) {
-	val padding = 5.dp
-	val width = getCanvasSize()
-	Column(
-		horizontalAlignment = Alignment.CenterHorizontally,
-		verticalArrangement = Arrangement.Center,
-		modifier = Modifier.fillMaxSize()
-			.size(width)
-			.padding(padding)
-	) {
-		Text(
-			text = "Undo",
-			style = TextStyle(
-				fontSize = 24.sp,
-				fontWeight = FontWeight.Bold,
-				textAlign = TextAlign.Center,
-				color = if (state.history.size > 1) {
-					Color.Black
-				} else {
-					Color.Black.copy(alpha = 0.2f)
-				}
-			),
-			modifier = Modifier.wrapContentWidth()
-				.background(
-					HexagonBackground(
-						color = if (state.history.size > 1) {
-							boardMustard
-						} else {
-							boardMustard.copy(alpha = 0.2f)
-						}
-					)
-				)
-				.padding(10.dp)
-				.then(
-					if (state.history.size > 1) {
-						Modifier.clickable {
-							onAction(BoardAction.OnUndoButtonClicked)
-						}
-					} else {
-						Modifier
-					}
-				)
+	val canvasSize = getCanvasSize()
+	if (isLandscapeOrientation()) {
+		LandscapeContent(
+			canvasSize = canvasSize,
+			onAction = onAction,
+			state = state
 		)
-		Spacer(modifier = Modifier.size(10.dp))
-		Row(
-			verticalAlignment = Alignment.CenterVertically,
-			horizontalArrangement = Arrangement.Center,
-			modifier = Modifier.background(
-					color = boardMustard,
-					shape = RoundedCornerShape(20.dp)
-				)
-				.fillMaxWidth()
-				.wrapContentHeight()
-				.padding(vertical = 10.dp)
-		) {
-			PlayerText()
-			ScoreText(
-				text = state.score.black.toString(),
-				backgroundColor = Color.Black,
-				textColor = Color.White
-			)
-			Spacer(modifier = Modifier.size(20.dp))
-			ScoreText(text = state.score.white.toString())
-			PlayerText(
-				text = "White",
-				textColor = Color.White
-			)
-		}
-		Box(
-			contentAlignment = Alignment.Center,
-			modifier = Modifier
-				.size(width)
-				.aspectRatio(1f)
-				.background(
-					color = boardMustard,
-					shape = RoundedCornerShape(5.dp)
-				)
-				.padding(padding)
-				.background(boardGreen)
-		) {
-			/*
-			DiagonalCoinFlipEffect(
-				canvasSize = width,
-				firstColor = Color.Black,
-				secondColor = Color.White,
-				onAnimationComplete = {}
-			)
-			 */
-			/*
-			CircleDrawingCanvas(
-				canvasSize = width,
-				firstColor = Color.Black,
-				secondColor = Color.White
-			)
-			 */
-			//
-			GridCanvas(
-				canvasSize = width,
-				onAction = onAction,
-				state = state
-			)
-			 //
-		}
+	} else {
+		PortraitContent(
+			canvasSize = canvasSize,
+			onAction = onAction,
+			state = state
+		)
 	}
 }
 
@@ -319,65 +203,6 @@ fun GridCanvas(
 	}
 }
 
-@Composable
-private fun RowScope.PlayerText(
-	text: String = "Black",
-	textColor: Color = Color.Black
-) {
-	Text(
-		text = text,
-		style = TextStyle(
-			fontSize = 24.sp,
-			fontWeight = FontWeight.Bold,
-			textAlign = TextAlign.Center,
-			color = textColor
-		),
-		modifier = Modifier.weight(1f)
-	)
-}
-
-@Composable
-private fun ScoreText(
-	text: String = " 0 ",
-	textColor: Color = Color.Black,
-	backgroundColor: Color = Color.White
-) {
-	val fixed = if (text.length < 2) " $text " else text
-	Text(
-		text = fixed,
-		style = TextStyle(
-			fontSize = 20.sp,
-			fontWeight = FontWeight.Bold,
-			color = textColor,
-			textAlign = TextAlign.Center
-		),
-		modifier = Modifier.background(
-			color = backgroundColor,
-			shape = RoundedCornerShape(20.dp)
-		)
-		.padding(10.dp)
-	)
-}
-
-@Composable
-fun getCanvasSize(): Dp {
-	val context = LocalContext.current
-	val orientation = context.resources.configuration.orientation
-	val isOrientationLandscape = when (orientation) {
-		Configuration.ORIENTATION_LANDSCAPE -> true
-		else -> false
-	}
-	val configuration = LocalConfiguration.current
-	return if (isOrientationLandscape) {
-		with(LocalDensity.current) {
-			val screenHeight = configuration.screenHeightDp.dp.toPx() * 0.2
-			screenHeight.dp
-		}
-	} else {
-		configuration.screenWidthDp.dp
-	}
-}
-
 @Preview
 @Composable
 fun GridScreenPreview() {
@@ -397,24 +222,5 @@ private fun BoardScreenPreview() {
 	BoardScreen(
 		onAction = {},
 		state = BoardState()
-	)
-}
-
-@Preview
-@Composable
-private fun BoardMainContentPreview() {
-	BoardMainContent(
-		modifier = Modifier,
-		onAction = {},
-		state = BoardState()
-	)
-}
-
-@Preview
-@Composable
-private fun ScoreTextPreview() {
-	ScoreText(
-		backgroundColor = orange,
-		textColor = Color.Black
 	)
 }
