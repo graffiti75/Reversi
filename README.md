@@ -14,4 +14,8 @@
 
 | Galaxy Tab S6 | Pixel 4A | Pixel 8A |
 |---------|---------|---------|
-| <img width="320" height="512" src="images/galaxy_tab_s6__portrait.jpg" alt="Galaxy Tab S6 Portrait"> | <img width="216" height="468" src="images/pixel4a__portrait.png" alt="Pixel 4A Portrait"> | <img width="216" height="480" src="images/pixel8a__portrait.png" alt="Pixel 4a Portrait"> |
+| <img width="320" height="512" src="images/galaxy_tab_s6__portrait.jpg" alt="Galaxy Tab S6 Portrait"> | <img width="216" height="468" src="images/pixel4a__portrait.png" alt="Pixel 4A Portrait"> | <img width="216" height="480" src="images/pixel8a__portrait.png" alt="Pixel 8a Portrait"> |
+
+# Video
+
+<img src="videos/20250220-172831.gif" alt="Sample Video" width="300" height="650">
