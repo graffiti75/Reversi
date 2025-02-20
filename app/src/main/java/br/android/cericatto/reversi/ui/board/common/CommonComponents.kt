@@ -117,22 +117,10 @@ fun sp2Dp(textSize: TextUnit): Dp {
 }
 
 @Composable
-fun dpToPx(dimension: Dp): Float {
-	val density = LocalDensity.current
-	return with(density) {
-		dimension.toPx()
-	}
-}
-
-@Composable
 fun getCanvasSize(): Dp {
 	val configuration = LocalConfiguration.current
 	return if (isLandscapeOrientation()) {
-		with(LocalDensity.current) {
-//			val screenHeight = configuration.screenHeightDp.dp.toPx() * 0.2
-//			screenHeight.dp
-			configuration.screenHeightDp.dp
-		}
+		configuration.screenHeightDp.dp
 	} else {
 		configuration.screenWidthDp.dp
 	}

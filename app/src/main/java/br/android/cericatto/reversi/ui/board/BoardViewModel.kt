@@ -136,6 +136,7 @@ class BoardViewModel @Inject constructor(
 				boardData = history[round].snapshot
 			)
 		}
+		updateGameScore()
 	}
 
 	/**
