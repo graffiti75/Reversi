@@ -1,16 +1,15 @@
 package br.android.cericatto.reversi.ui.board.common
 
-import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.CubicBezierEasing
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -19,118 +18,71 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.withTransform
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
-import kotlin.math.absoluteValue
 import kotlin.math.cos
 
 @Composable
-fun CircleDrawingCanvas(
+fun CircleWithCoinFlipEffect(
 	canvasSize: Dp = 300.dp,
 	radius: Float = 90f,
-	firstColor: Color = Color(0xFF2196F3),
-	secondColor: Color = Color(0xFFF44336),
-	animationDuration: Int = 500,
-) {
-	var circlePosition by remember { mutableStateOf<Offset?>(null) }
-	var isAnimating by remember { mutableStateOf(false) }
-	val color by animateColorAsState(
-		targetValue = if (isAnimating) firstColor else secondColor,
-		animationSpec = tween(
-			durationMillis = animationDuration,
-//			easing = CubicBezierEasing(0.25f, 0.1f, 0.25f, 1.0f),
-		),
-		finishedListener = {
-			isAnimating = false
-		},
-		label = "Circle Color Animation"
-	)
-
-	val coroutineScope = rememberCoroutineScope()
-
-	Canvas(
-		modifier = Modifier.width(canvasSize)
-			.aspectRatio(1f)
-			.pointerInput(Unit) {
-				detectTapGestures { offset ->
-					circlePosition = offset
-					isAnimating = false  // Reset color to black
-					coroutineScope.launch {
-						isAnimating = true  // Start animation
-					}
-				}
-			}
-	) {
-		circlePosition?.let { pos ->
-			drawCircle(
-				color = color,
-				center = pos,
-				radius = radius
-			)
-		}
-	}
-}
-
-@Composable
-fun DiagonalCoinFlipEffect(
-	canvasSize: Dp = 300.dp,
-	radius: Float = 90f,
-	firstColor: Color = Color(0xFF2196F3),
-	secondColor: Color = Color(0xFFF44336),
+	firstColor: Color = Color.Black,
+	secondColor: Color = Color.White,
 	center: Offset = Offset(150f, 150f),
 	animationDuration: Int = 500,
-	angle: Float = 225f,
+	angle: Float = 45f,
+	triggerAnimation: Boolean = true,
 	onAnimationComplete: () -> Unit = {}
 ) {
-	var isFlipping by remember { mutableStateOf(false) }
+	// Side state: 0 for firstColor (black), 1 for secondColor (white).
+	var side by remember { mutableIntStateOf(0) }
+	val flipProgress = remember { Animatable(0f) }
+	val coroutineScope = rememberCoroutineScope()
 
-	// This animation now represents the progress of our diagonal flip
-	val flipProgress by animateFloatAsState(
-		targetValue = if (isFlipping) angle else 0f,
-		animationSpec = tween(
-			durationMillis = animationDuration,
-			// Using a custom easing for natural flip motion
-			easing = CubicBezierEasing(0.25f, 0.1f, 0.25f, 1.0f)
-		),
-		finishedListener = {
-			isFlipping = false
-			onAnimationComplete()
-		},
-		label = "diagonal_flip"
-	)
+	// Determine current color based on animation state.
+	val currentColor = if (flipProgress.isRunning) {
+		val flips = (flipProgress.value / 180f).toInt()
+		if ((side + flips) % 2 == 0) firstColor else secondColor
+	} else {
+		if (side == 0) firstColor else secondColor
+	}
 
-	val currentColor by animateColorAsState(
-		targetValue = if (isFlipping) firstColor else secondColor,
-		animationSpec = tween(durationMillis = animationDuration),
-		label = "color_transition"
-	)
-
-	// Calculate the ellipse transformation for our diagonal flip
-	// We adjust the angle calculation to match our desired 135° to 45° orientation
-	val normalizedAngle = flipProgress
-	val scaleX = cos(Math.toRadians(normalizedAngle.toDouble())).absoluteValue.toFloat()
+	// Trigger animation when triggerAnimation becomes true
+	LaunchedEffect(triggerAnimation) {
+		if (triggerAnimation && !flipProgress.isRunning) {
+			coroutineScope.launch {
+				// Animate two flips (0 to 360 degrees).
+				flipProgress.animateTo(
+					targetValue = 360f,
+					animationSpec = tween(
+						durationMillis = animationDuration,
+						easing = CubicBezierEasing(0.25f, 0.1f, 0.25f, 1.0f)
+					)
+				)
+				// Toggle side once to end on the other side.
+				side = (side + 1) % 2
+				// Reset progress instantly.
+				flipProgress.snapTo(0f)
+				onAnimationComplete()
+			}
+		}
+	}
 
 	Canvas(
-		modifier = Modifier.width(canvasSize)
+		modifier = Modifier
+			.width(canvasSize)
 			.aspectRatio(1f)
-			.pointerInput(Unit) {
-				detectTapGestures {
-					if (!isFlipping) {
-						isFlipping = true
-					}
-				}
-			}
 	) {
+		// ScaleX for full flip effect without absolute value.
+		val scaleX = cos(Math.toRadians(flipProgress.value.toDouble())).toFloat()
+
 		withTransform({
-			// First rotate to our starting diagonal orientation (135°)
 			rotate(
 				degrees = angle,
 				pivot = center
 			)
-			// Then apply the scaling transformation for the flip effect
 			scale(
 				scaleX = scaleX,
 				scaleY = 1f,
@@ -149,8 +101,8 @@ fun DiagonalCoinFlipEffect(
 
 @Preview
 @Composable
-private fun DiagonalCoinFlipEffectPreview() {
-	DiagonalCoinFlipEffect(
+private fun CircleAnimationPreview() {
+	CircleWithCoinFlipEffect(
 		onAnimationComplete = {}
 	)
 }
