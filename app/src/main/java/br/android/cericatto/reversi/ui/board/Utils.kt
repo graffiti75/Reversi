@@ -3,6 +3,48 @@ package br.android.cericatto.reversi.ui.board
 import androidx.compose.ui.geometry.Offset
 import kotlin.math.absoluteValue
 
+/**
+ * Represents a direction to check on the board using coordinate modifiers.
+ *
+ * @param rowModifier How the row changes in this direction (+1, 0, or -1)
+ * @param colModifier How the column changes in this direction (+1, 0, or -1)
+ */
+data class Direction(val rowModifier: Int, val colModifier: Int)
+
+enum class Directions {
+	NORTH,
+	NORTH_EAST,
+	EAST,
+	SOUTH_EAST,
+	SOUTH,
+	SOUTH_WEST,
+	WEST,
+	NORTH_WEST
+}
+
+fun List<BoardCell>.getCellByPosition(position: BoardPosition): BoardCell? {
+	println("------------------------- getCellByPosition")
+	val validPosition = isValidPosition(position.row, position.col)
+	if (!validPosition) return null
+
+	val cellExistsOnBoard = this.filter {
+		it.boardPosition.col == position.col && it.boardPosition.row == position.row
+	}
+	val notEmpty = cellExistsOnBoard.isNotEmpty()
+	println("----- getCellByPosition -> notEmpty: $notEmpty")
+	val cell = if (notEmpty) {
+		cellExistsOnBoard.first()
+	} else {
+		BoardCell(
+			cellState = CellState.HINT,
+			boardPosition = position,
+			filled = false
+		)
+	}
+	println("----- getCellByPosition -> returned cell: $cell")
+	return cell
+}
+
 fun boardPosition(
 	position: Offset,
 	cellSize: Float
@@ -71,14 +113,6 @@ fun calculateScore(list: List<BoardCell>) = Score(
 )
 
 /**
- * Represents a direction to check on the board using coordinate modifiers.
- *
- * @param rowModifier How the row changes in this direction (+1, 0, or -1)
- * @param colModifier How the column changes in this direction (+1, 0, or -1)
- */
-data class Direction(val rowModifier: Int, val colModifier: Int)
-
-/**
  * Unified method to check the board in any direction for pieces that can be captured.
  *
  * @param current The current board piece being checked
@@ -87,14 +121,14 @@ data class Direction(val rowModifier: Int, val colModifier: Int)
  *
  * @return List of pieces that can be captured in the specified direction
  */
-fun checkBoard(
+fun checkBoardDirection(
 	current: BoardCell,
 	list: List<BoardCell>,
 	direction: Direction
 ): List<BoardCell> {
-	println("-------------------- checking direction: rowMod=${direction.rowModifier}, colMod=${direction.colModifier}")
-	println("current: $current")
-	println("list: $list")
+//	println("-------------------- checking direction: rowMod=${direction.rowModifier}, colMod=${direction.colModifier}")
+//	println("current: $current")
+//	println("list: $list")
 
 	val startCol = current.boardPosition.col
 	val startRow = current.boardPosition.row
@@ -114,17 +148,17 @@ fun checkBoard(
 
 		if (item != null) {
 			if (item.cellState == state) {
-				println("The item at [$itemRow, $itemCol] has the same color of our current item: ${state.name}")
+//				println("The item at [$itemRow, $itemCol] has the same color of our current item: ${state.name}")
 				differentColor = false
 			} else {
-				println("The item at [$itemRow, $itemCol] has a different color than our current item. " +
-					"This color is ${item.cellState.name}")
+//				println("The item at [$itemRow, $itemCol] has a different color than our current item. " +
+//					"This color is ${item.cellState.name}")
 				visited.add(item)
 				itemCol += direction.colModifier
 				itemRow += direction.rowModifier
 			}
 		} else {
-			println("There's not an item on position [$itemRow, $itemCol].")
+//			println("There's not an item on position [$itemRow, $itemCol].")
 			return emptyList()
 		}
 	}
@@ -135,13 +169,65 @@ fun checkBoard(
 	//
 	if (visited.isNotEmpty()) {
 		visited.forEach {
+//			println("visited: $it")
+		}
+	} else{
+//		println("visited is empty!")
+	}
+	 //
+	return visited
+}
+
+fun List<BoardCell>.checkBoardAll(
+	player: CellState,
+	current: BoardCell
+): List<BoardCell> {
+	println("------------------------- checkBoardAll")
+	println("----- checkBoardAll -> current: $current")
+	println("----- checkBoardAll -> list: $this")
+	val visited = mutableListOf<BoardCell>()
+	val directions = listOf(
+		Directions.NORTH, Directions.NORTH_EAST, Directions.EAST, Directions.SOUTH_EAST,
+		Directions.SOUTH, Directions.SOUTH_WEST, Directions.WEST, Directions.NORTH_WEST
+	)
+	this.forEach { item ->
+		if (item.cellState != CellState.EMPTY) {
+			directions.forEach { direction ->
+				println("----- checkBoardAll -> direction: $direction")
+				this.checkNeighbor(
+					player = player,
+					current = current,
+					direction = getDirection(direction)
+				)?.let {
+					println("----- checkBoardAll -> visited: $it")
+					visited.add(it)
+				}
+			}
+
+		}
+	}
+	if (visited.isNotEmpty()) {
+		visited.forEach {
 			println("visited: $it")
 		}
 	} else{
 		println("visited is empty!")
 	}
-	 //
+
 	return visited
+}
+
+fun getDirection(direction: Directions): Direction {
+	return when (direction) {
+		Directions.NORTH -> Direction(-1, 0)
+		Directions.NORTH_EAST -> Direction(-1, 1)
+		Directions.EAST -> Direction(0, 1)
+		Directions.SOUTH_EAST -> Direction(1, 1)
+		Directions.SOUTH -> Direction(1, 0)
+		Directions.SOUTH_WEST -> Direction(1, -1)
+		Directions.WEST -> Direction(0, -1)
+		Directions.NORTH_WEST -> Direction(-1, -1)
+	}
 }
 
 /**
@@ -152,28 +238,49 @@ private fun isValidPosition(row: Int, col: Int): Boolean {
 }
 
 /**
- * Checks all 8 possibilities.
+ * Check the neighbor pieces.
  */
-fun checkNorth(current: BoardCell, list: List<BoardCell>): List<BoardCell> =
-	checkBoard(current, list, Direction(-1, 0))
+private fun List<BoardCell>.checkNeighbor(
+	player: CellState,
+	current: BoardCell,
+	direction: Direction
+): BoardCell? {
+	println("------------------------- checkNeighbor")
+	val itemCol = current.boardPosition.col + direction.colModifier
+	val itemRow = current.boardPosition.row + direction.rowModifier
+	val neighbor = this.getCellByPosition(BoardPosition(row = itemRow, col = itemCol))
 
-fun checkNortheast(current: BoardCell, list: List<BoardCell>): List<BoardCell> =
-	checkBoard(current, list, Direction(-1, 1))
+	if (neighbor != null) {
+		println("----- checkNeighbor -> neighbor: $neighbor")
+		if (current.cellState != player) return neighbor
+		return null
+	}
+	return null
+}
 
-fun checkEast(current: BoardCell, list: List<BoardCell>): List<BoardCell> =
-	checkBoard(current, list, Direction(0, 1))
+/**
+ * Checks all 8 possibilities for eaten pieces.
+ */
+fun checkNorthDirection(current: BoardCell, list: List<BoardCell>): List<BoardCell> =
+	checkBoardDirection(current, list, Direction(-1, 0))
 
-fun checkSoutheast(current: BoardCell, list: List<BoardCell>): List<BoardCell> =
-	checkBoard(current, list, Direction(1, 1))
+fun checkNortheastDirection(current: BoardCell, list: List<BoardCell>): List<BoardCell> =
+	checkBoardDirection(current, list, Direction(-1, 1))
 
-fun checkSouth(current: BoardCell, list: List<BoardCell>): List<BoardCell> =
-	checkBoard(current, list, Direction(1, 0))
+fun checkEastDirection(current: BoardCell, list: List<BoardCell>): List<BoardCell> =
+	checkBoardDirection(current, list, Direction(0, 1))
 
-fun checkSouthwest(current: BoardCell, list: List<BoardCell>): List<BoardCell> =
-	checkBoard(current, list, Direction(1, -1))
+fun checkSoutheastDirection(current: BoardCell, list: List<BoardCell>): List<BoardCell> =
+	checkBoardDirection(current, list, Direction(1, 1))
 
-fun checkWest(current: BoardCell, list: List<BoardCell>): List<BoardCell> =
-	checkBoard(current, list, Direction(0, -1))
+fun checkSouthDirection(current: BoardCell, list: List<BoardCell>): List<BoardCell> =
+	checkBoardDirection(current, list, Direction(1, 0))
 
-fun checkNorthwest(current: BoardCell, list: List<BoardCell>): List<BoardCell> =
-	checkBoard(current, list, Direction(-1, -1))
+fun checkSouthwestDirection(current: BoardCell, list: List<BoardCell>): List<BoardCell> =
+	checkBoardDirection(current, list, Direction(1, -1))
+
+fun checkWestDirection(current: BoardCell, list: List<BoardCell>): List<BoardCell> =
+	checkBoardDirection(current, list, Direction(0, -1))
+
+fun checkNorthwestDirection(current: BoardCell, list: List<BoardCell>): List<BoardCell> =
+	checkBoardDirection(current, list, Direction(-1, -1))

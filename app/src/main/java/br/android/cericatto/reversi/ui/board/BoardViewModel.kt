@@ -94,14 +94,14 @@ class BoardViewModel @Inject constructor(
 		val last = _state.value.last!!
 		val list = _state.value.boardData
 		val eatenPieces = when (movement) {
-			Movement.NORTH -> checkNorth(last, list)
-			Movement.NORTHEAST -> checkNortheast(last, list)
-			Movement.EAST -> checkEast(last, list)
-			Movement.SOUTHEAST -> checkSoutheast(last, list)
-			Movement.SOUTH -> checkSouth(last, list)
-			Movement.SOUTHWEST -> checkSouthwest(last, list)
-			Movement.WEST -> checkWest(last, list)
-			Movement.NORTHWEST -> checkNorthwest(last, list)
+			Movement.NORTH -> checkNorthDirection(last, list)
+			Movement.NORTHEAST -> checkNortheastDirection(last, list)
+			Movement.EAST -> checkEastDirection(last, list)
+			Movement.SOUTHEAST -> checkSoutheastDirection(last, list)
+			Movement.SOUTH -> checkSouthDirection(last, list)
+			Movement.SOUTHWEST -> checkSouthwestDirection(last, list)
+			Movement.WEST -> checkWestDirection(last, list)
+			Movement.NORTHWEST -> checkNorthwestDirection(last, list)
 		}
 
 		var updatedList: List<BoardCell> = emptyList()

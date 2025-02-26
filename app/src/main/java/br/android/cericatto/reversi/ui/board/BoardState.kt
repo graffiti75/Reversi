@@ -13,7 +13,8 @@ val FIRST_PLAYER = CellState.BLACK
 enum class CellState {
 	EMPTY,
 	BLACK,
-	WHITE
+	WHITE,
+	HINT
 }
 
 data class Score(

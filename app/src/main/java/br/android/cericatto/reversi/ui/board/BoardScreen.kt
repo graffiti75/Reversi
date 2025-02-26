@@ -221,6 +221,29 @@ fun GridCanvas(
 				)
 			}
 		}
+
+		// Draw Circles for the next possible moves.
+//		val currentCell = state.boardData.getCellByPosition(BoardPosition(row = 3, col = 3))!!
+		state.boardData.forEach { filledCell ->
+			state.boardData.checkBoardAll(
+				player = state.last.cellState,
+				current = filledCell
+			).forEach { item ->
+				if (item.cellState == CellState.HINT) {
+					val center = centerPosition(
+						cellSize = cellSize,
+						row = item.boardPosition.row,
+						col = item.boardPosition.col
+					)
+					drawCircle(
+						color = Color.Green,
+						radius = cellSize * 0.1f,
+						center = center,
+						style = Fill
+					)
+				}
+			}
+		}
 	}
 }
 
