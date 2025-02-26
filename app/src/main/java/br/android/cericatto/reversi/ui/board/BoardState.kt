@@ -1,7 +1,5 @@
 package br.android.cericatto.reversi.ui.board
 
-import androidx.compose.animation.core.Animatable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.geometry.Offset
 import kotlin.random.Random
 

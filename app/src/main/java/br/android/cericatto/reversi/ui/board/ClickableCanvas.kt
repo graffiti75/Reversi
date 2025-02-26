@@ -16,7 +16,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.tooling.preview.Preview
 
 @Composable
-fun ClickableCanvas() {
+private fun ClickableCanvas() {
 	// State to store the current click position
 	var clickPosition by remember { mutableStateOf<Offset?>(null) }
 
