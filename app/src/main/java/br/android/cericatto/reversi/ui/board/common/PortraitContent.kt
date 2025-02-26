@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import br.android.cericatto.reversi.ui.board.BoardAction
 import br.android.cericatto.reversi.ui.board.BoardState
+import br.android.cericatto.reversi.ui.board.GridCanvas
 import br.android.cericatto.reversi.ui.theme.boardGreen
 import br.android.cericatto.reversi.ui.theme.boardMustard
 
@@ -55,18 +56,10 @@ fun PortraitContent(
 				.padding(padding)
 				.background(boardGreen)
 		) {
-			/*
 			GridCanvas(
 				canvasSize = canvasSize,
 				onAction = onAction,
 				state = state
-			)
-			 */
-			CircleWithCoinFlipEffect(
-				canvasSize = canvasSize,
-				firstColor = Color.Black,
-				secondColor = Color.White,
-				onAnimationComplete = {}
 			)
 		}
 	}

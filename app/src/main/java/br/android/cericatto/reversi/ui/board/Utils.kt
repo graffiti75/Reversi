@@ -92,9 +92,9 @@ fun checkBoard(
 	list: List<BoardCell>,
 	direction: Direction
 ): List<BoardCell> {
-	println("-------------------- checking direction: rowMod=${direction.rowModifier}, colMod=${direction.colModifier}")
-	println("current: $current")
-	println("list: $list")
+//	println("-------------------- checking direction: rowMod=${direction.rowModifier}, colMod=${direction.colModifier}")
+//	println("current: $current")
+//	println("list: $list")
 
 	val startCol = current.boardPosition.col
 	val startRow = current.boardPosition.row
@@ -114,17 +114,17 @@ fun checkBoard(
 
 		if (item != null) {
 			if (item.cellState == state) {
-				println("The item at [$itemRow, $itemCol] has the same color of our current item: ${state.name}")
+//				println("The item at [$itemRow, $itemCol] has the same color of our current item: ${state.name}")
 				differentColor = false
 			} else {
-				println("The item at [$itemRow, $itemCol] has a different color than our current item. " +
-					"This color is ${item.cellState.name}")
+//				println("The item at [$itemRow, $itemCol] has a different color than our current item. " +
+//					"This color is ${item.cellState.name}")
 				visited.add(item)
 				itemCol += direction.colModifier
 				itemRow += direction.rowModifier
 			}
 		} else {
-			println("There's not an item on position [$itemRow, $itemCol].")
+//			println("There's not an item on position [$itemRow, $itemCol].")
 			return emptyList()
 		}
 	}
@@ -132,6 +132,7 @@ fun checkBoard(
 	if (!isValidPosition(itemRow, itemCol)) return emptyList()
 
 	// Log found pieces to be captured.
+	/*
 	if (visited.isNotEmpty()) {
 		visited.forEach {
 			println("visited: $it")
@@ -139,6 +140,7 @@ fun checkBoard(
 	} else{
 		println("visited is empty!")
 	}
+	 */
 	return visited
 }
 

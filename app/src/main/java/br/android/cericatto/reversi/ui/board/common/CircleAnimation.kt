@@ -1,83 +1,37 @@
 package br.android.cericatto.reversi.ui.board.common
 
-import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.CubicBezierEasing
-import androidx.compose.animation.core.tween
-import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.width
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.drawscope.Fill
+import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.withTransform
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.launch
+import br.android.cericatto.reversi.ui.board.BoardAction
+import br.android.cericatto.reversi.ui.board.BoardCell
+import br.android.cericatto.reversi.ui.board.CellState
 import kotlin.math.cos
 
-@Composable
-fun CircleWithCoinFlipEffect(
-	canvasSize: Dp = 300.dp,
-	radius: Float = 90f,
-	firstColor: Color = Color.Black,
-	secondColor: Color = Color.White,
-	center: Offset = Offset(150f, 150f),
-	animationDuration: Int = 500,
+// Non-composable drawing function inside DrawScope,
+fun DrawScope.CoinFlip(
+	cell: BoardCell,
+	center: Offset,
+	radius: Float,
+	startAnimation: Boolean,
+	animationProgress: Float, // 0f to 360f
 	angle: Float = 45f,
-	triggerAnimation: Boolean = true,
-	onAnimationComplete: () -> Unit = {}
+	onAction: (BoardAction) -> Unit
 ) {
-	// Side state: 0 for firstColor (black), 1 for secondColor (white).
-	var side by remember { mutableIntStateOf(0) }
-	val flipProgress = remember { Animatable(0f) }
-	val coroutineScope = rememberCoroutineScope()
-
-	// Determine current color based on animation state.
-	val currentColor = if (flipProgress.isRunning) {
-		val flips = (flipProgress.value / 180f).toInt()
-		if ((side + flips) % 2 == 0) firstColor else secondColor
-	} else {
-		if (side == 0) firstColor else secondColor
-	}
-
-	// Trigger animation when triggerAnimation becomes true
-	LaunchedEffect(triggerAnimation) {
-		if (triggerAnimation && !flipProgress.isRunning) {
-			coroutineScope.launch {
-				// Animate two flips (0 to 360 degrees).
-				flipProgress.animateTo(
-					targetValue = 360f,
-					animationSpec = tween(
-						durationMillis = animationDuration,
-						easing = CubicBezierEasing(0.25f, 0.1f, 0.25f, 1.0f)
-					)
-				)
-				// Toggle side once to end on the other side.
-				side = (side + 1) % 2
-				// Reset progress instantly.
-				flipProgress.snapTo(0f)
-				onAnimationComplete()
-			}
+	if (startAnimation && animationProgress > 0f) {
+		// Animated coin flip logic.
+		// Determine color based on animation progress (flip effect).
+		val currentColor = if (animationProgress < 180f) {
+			if (cell.cellState == CellState.BLACK) Color.Black else Color.White
+		} else {
+			if (cell.cellState == CellState.BLACK) Color.White else Color.Black
 		}
-	}
 
-	Canvas(
-		modifier = Modifier
-			.width(canvasSize)
-			.aspectRatio(1f)
-	) {
-		// ScaleX for full flip effect without absolute value.
-		val scaleX = cos(Math.toRadians(flipProgress.value.toDouble())).toFloat()
+		// Calculate scale for flip animation (horizontal scaling).
+		val scaleX = cos(Math.toRadians(animationProgress.toDouble())).toFloat()
 
+		// Apply transformations for animation.
 		withTransform({
 			rotate(
 				degrees = angle,
@@ -92,17 +46,20 @@ fun CircleWithCoinFlipEffect(
 			drawCircle(
 				color = currentColor,
 				radius = radius,
-				center = center,
-				style = Fill
+				center = center
 			)
 		}
-	}
-}
 
-@Preview
-@Composable
-private fun CircleAnimationPreview() {
-	CircleWithCoinFlipEffect(
-		onAnimationComplete = {}
-	)
+		// Call finishedAnimation when animation is complete (close to 360f).
+		if (animationProgress >= 350f) {
+			onAction(BoardAction.OnUpdateAnimationStatus(cell.boardPosition))
+		}
+	} else {
+		// Static circle drawing.
+		drawCircle(
+			color = if (cell.cellState == CellState.BLACK) Color.Black else Color.White,
+			radius = radius,
+			center = center
+		)
+	}
 }

@@ -31,6 +31,7 @@ class BoardViewModel @Inject constructor(
 			is BoardAction.OnMovementPlayed -> onMovementPlayed(action.boardPosition)
 			is BoardAction.OnUpdateClickedPosition -> onUpdateClickedPosition(action.offsetPosition)
 			is BoardAction.OnUndoButtonClicked -> onUndoButtonClicked()
+			is BoardAction.OnUpdateAnimationStatus -> onUpdateAnimationStatus(action.boardPosition)
 		}
 	}
 
@@ -66,8 +67,8 @@ class BoardViewModel @Inject constructor(
 	}
 
 	private fun checkAllMovements() {
-		println("==================================================\n")
-		println("==================================================\n")
+//		println("==================================================\n")
+//		println("==================================================\n")
 		addMovementPieces(Movement.NORTH)
 		addMovementPieces(Movement.NORTHEAST)
 		addMovementPieces(Movement.EAST)
@@ -92,7 +93,7 @@ class BoardViewModel @Inject constructor(
 	private fun checkMovement(movement: Movement): List<BoardCell> {
 		val last = _state.value.last!!
 		val list = _state.value.boardData
-		val data = when (movement) {
+		val eatenPieces = when (movement) {
 			Movement.NORTH -> checkNorth(last, list)
 			Movement.NORTHEAST -> checkNortheast(last, list)
 			Movement.EAST -> checkEast(last, list)
@@ -104,13 +105,18 @@ class BoardViewModel @Inject constructor(
 		}
 
 		var updatedList: List<BoardCell> = emptyList()
-		if (data.isNotEmpty()) {
-			val set = data.map { it.boardPosition }.toSet()
+		if (eatenPieces.isNotEmpty()) {
+			val set = eatenPieces.map { it.boardPosition }.toSet()
 			updatedList = _state.value.boardData.map { item ->
 				if (item.boardPosition in set) {
-					item.copy(cellState = last.cellState)
+					item.copy(
+						cellState = last.cellState,
+						shouldAnimate = true
+					)
 				} else {
-					item
+					item.copy(
+						shouldAnimate = false
+					)
 				}
 			}
 		}
@@ -137,6 +143,21 @@ class BoardViewModel @Inject constructor(
 			)
 		}
 		updateGameScore()
+	}
+
+	private fun onUpdateAnimationStatus(boardPosition: BoardPosition) {
+		_state.update { state ->
+			state.copy(
+				boardData = state.boardData.map { item ->
+					if (item.boardPosition == boardPosition) {
+						item.copy(shouldAnimate = false)
+					} else {
+						item
+					}
+				},
+				animationProgress = 0f
+			)
+		}
 	}
 
 	/**
@@ -168,17 +189,6 @@ class BoardViewModel @Inject constructor(
 			state.copy(
 				score = updated
 			)
-		}
-	}
-
-	private fun checkDistances() {
-		_state.value.last?.let { last ->
-			_state.value.boardData.forEach { item ->
-				val distance = differenceBetweenTwoPoints(
-					last.boardPosition, item.boardPosition
-				)
-				println("----- ($item) distance: $distance")
-			}
 		}
 	}
 }

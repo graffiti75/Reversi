@@ -1,5 +1,7 @@
 package br.android.cericatto.reversi.ui.board
 
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.aspectRatio
@@ -8,6 +10,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
@@ -27,6 +30,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import br.android.cericatto.reversi.ObserveAsEvents
 import br.android.cericatto.reversi.navigation.Route
 import br.android.cericatto.reversi.ui.UiEvent
+import br.android.cericatto.reversi.ui.board.common.CoinFlip
 import br.android.cericatto.reversi.ui.board.common.LandscapeContent
 import br.android.cericatto.reversi.ui.board.common.PortraitContent
 import br.android.cericatto.reversi.ui.board.common.getCanvasSize
@@ -113,6 +117,23 @@ fun GridCanvas(
 	var radius by remember { mutableFloatStateOf(0f) }
 	var cellSize by remember { mutableFloatStateOf(0f) }
 
+	// Check if any item has startAnimation = true
+	val shouldAnimate = state.boardData.any { it.shouldAnimate }
+	val animationProgress = remember(shouldAnimate) { Animatable(0f) }
+
+	// Trigger animation if shouldAnimate is true.
+	LaunchedEffect(shouldAnimate) {
+		if (shouldAnimate) {
+			// Animate from 0 to 360 degrees over 1000ms
+			animationProgress.animateTo(
+				targetValue = 360f,
+				animationSpec = tween(durationMillis = 1000)
+			)
+			// Reset after animation completes
+			animationProgress.snapTo(0f)
+		}
+	}
+
 	// Squared Canvas with equal width and height.
 	Canvas(
 		modifier = modifier.width(canvasSize)
@@ -155,18 +176,19 @@ fun GridCanvas(
 
 		// Draw Circles based on the board state.
 		state.boardData.forEach { item ->
-			println("[GridCanvas] position: ${item.boardPosition}, color: ${item.cellState.name}")
 			if (item.cellState != CellState.EMPTY) {
 				val center = centerPosition(
 					cellSize = cellSize,
 					row = item.boardPosition.row,
 					col = item.boardPosition.col
 				)
-				drawCircle(
-					color = if (item.cellState == CellState.BLACK) Color.Black else Color.White,
+				CoinFlip(
 					radius = radius,
 					center = center,
-					style = Fill
+					startAnimation = item.shouldAnimate,
+					cell = item,
+					animationProgress = if (item.shouldAnimate) animationProgress.value else 0f,
+					onAction = onAction
 				)
 			}
 		}
@@ -186,7 +208,6 @@ fun GridCanvas(
 					cellSize = cellSize,
 					position = position
 				)
-				println("clickPosition: $pair")
 				drawCircle(
 					color = if (state.last.cellState == CellState.BLACK) Color.Black else Color.White,
 					radius = radius,

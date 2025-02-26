@@ -1,5 +1,7 @@
 package br.android.cericatto.reversi.ui.board
 
+import androidx.compose.animation.core.Animatable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.geometry.Offset
 import kotlin.random.Random
 
@@ -35,7 +37,8 @@ data class BoardState(
 		filled = false
 	),
 	val score: Score = Score(),
-	val round: Int = 0
+	val round: Int = 0,
+	val animationProgress: Float = 0f
 )
 
 /**
@@ -45,6 +48,7 @@ data class BoardCell(
 	val cellState: CellState = CellState.EMPTY,
 	val boardPosition: BoardPosition = BoardPosition(0, 0),
 	val filled : Boolean = true,
+	val shouldAnimate: Boolean = false
 )
 
 data class Snapshot(
