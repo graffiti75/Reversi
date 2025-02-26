@@ -67,8 +67,8 @@ class BoardViewModel @Inject constructor(
 	}
 
 	private fun checkAllMovements() {
-//		println("==================================================\n")
-//		println("==================================================\n")
+		println("==================================================\n")
+		println("==================================================\n")
 		addMovementPieces(Movement.NORTH)
 		addMovementPieces(Movement.NORTHEAST)
 		addMovementPieces(Movement.EAST)

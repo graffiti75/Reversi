@@ -53,7 +53,29 @@ data class Snapshot(
 	val snapshot: List<BoardCell>
 )
 
-val sampleBoardState = randomBoardStates()
+val sampleBoardState = initialBoardStates()
+//val sampleBoardState = randomBoardStates()
+
+private fun initialBoardStates(): List<BoardCell> {
+	return listOf(
+		BoardCell(
+			cellState = CellState.WHITE,
+			boardPosition = BoardPosition(row = 3, col = 3),
+		),
+		BoardCell(
+			cellState = CellState.BLACK,
+			boardPosition = BoardPosition(row = 3, col = 4),
+		),
+		BoardCell(
+			cellState = CellState.BLACK,
+			boardPosition = BoardPosition(row = 4, col = 3),
+		),
+		BoardCell(
+			cellState = CellState.WHITE,
+			boardPosition = BoardPosition(row = 4, col = 4),
+		)
+	)
+}
 
 private fun randomBoardStates(
 	seed: Int = SEED

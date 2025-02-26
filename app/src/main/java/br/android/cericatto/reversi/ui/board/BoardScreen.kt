@@ -1,6 +1,5 @@
 package br.android.cericatto.reversi.ui.board
 
-import android.util.Log
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
@@ -36,7 +35,6 @@ import br.android.cericatto.reversi.ui.board.common.LandscapeContent
 import br.android.cericatto.reversi.ui.board.common.PortraitContent
 import br.android.cericatto.reversi.ui.board.common.getCanvasSize
 import br.android.cericatto.reversi.ui.board.common.isLandscapeOrientation
-import br.android.cericatto.reversi.ui.theme.orange
 import kotlinx.coroutines.launch
 
 @Composable
@@ -184,7 +182,6 @@ fun GridCanvas(
 					row = item.boardPosition.row,
 					col = item.boardPosition.col
 				)
-				Log.i("reversi", "cell: $item")
 				CoinFlip(
 					radius = radius,
 					center = center,
@@ -211,7 +208,6 @@ fun GridCanvas(
 					cellSize = cellSize,
 					position = position
 				)
-				Log.i("reversi", "state.last.cellState: ${state.last.cellState}")
 				drawCircle(
 					color = Color.Transparent,
 					radius = radius,
