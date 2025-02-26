@@ -100,17 +100,3 @@ private fun randomBoardStates(
 	println("i: $i")
 	return mutableList
 }
-
-/**
- * Possible Movements from the pieces into the Board
- */
-enum class Movement {
-	NORTH,
-	NORTHEAST,
-	EAST,
-	SOUTHEAST,
-	SOUTH,
-	SOUTHWEST,
-	WEST,
-	NORTHWEST
-}

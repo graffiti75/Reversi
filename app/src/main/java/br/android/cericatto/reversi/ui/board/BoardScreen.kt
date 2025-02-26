@@ -173,61 +173,29 @@ fun GridCanvas(
 
 		// Calculate the radius (slightly smaller than the cell).
 		radius = cellSize * 0.45f
-
-		// Draw Circles based on the board state.
-		state.boardData.forEach { item ->
-			if (item.cellState != CellState.EMPTY) {
+		state.boardData.forEach { cell ->
+			// Draw Circles based on the board state.
+			if (cell.cellState != CellState.EMPTY) {
 				val center = centerPosition(
 					cellSize = cellSize,
-					row = item.boardPosition.row,
-					col = item.boardPosition.col
+					row = cell.boardPosition.row,
+					col = cell.boardPosition.col
 				)
 				CoinFlip(
 					radius = radius,
 					center = center,
-					startAnimation = item.shouldAnimate,
-					cell = item,
-					animationProgress = if (item.shouldAnimate) animationProgress.value else 0f,
+					startAnimation = cell.shouldAnimate,
+					cell = cell,
+					animationProgress = if (cell.shouldAnimate) animationProgress.value else 0f,
 					onAction = onAction
 				)
 			}
-		}
 
-		// Draw a Circle for the current clicked position.
-		state.clickedPosition?.let { position ->
-			val center = calculateCenterClickedPosition(
-				cellSize = cellSize,
-				position = position
-			)
-			val filled = boardPositionIsFilled(
-				cellSize = cellSize,
-				position = position
-			)
-			if (!filled) {
-				val pair = boardPosition(
-					cellSize = cellSize,
-					position = position
-				)
-				drawCircle(
-					color = Color.Transparent,
-					radius = radius,
-					center = Offset(center.x, center.y),
-					style = Fill
-				)
-				onAction(
-					BoardAction.OnMovementPlayed(
-						boardPosition = BoardPosition(pair.first, pair.second)
-					)
-				)
-			}
-		}
-
-		// Draw Circles for the next possible moves.
-//		val currentCell = state.boardData.getCellByPosition(BoardPosition(row = 3, col = 3))!!
-		state.boardData.forEach { filledCell ->
-			state.boardData.checkBoardAll(
-				player = state.last.cellState,
-				current = filledCell
+			// Draw Green Circles for the next possible moves.
+			println("------------------------- state.boardData.checkBoardNeighbors")
+			state.boardData.checkBoardNeighbors(
+				playerState = state.last.cellState,
+				current = cell
 			).forEach { item ->
 				if (item.cellState == CellState.HINT) {
 					val center = centerPosition(
@@ -242,6 +210,32 @@ fun GridCanvas(
 						style = Fill
 					)
 				}
+			}
+		}
+
+		// Draw a Circle for the current clicked position.
+		state.clickedPosition?.let { position ->
+			val center = calculateCenterClickedPosition(
+				cellSize = cellSize,
+				position = position
+			)
+			val filled = boardPositionIsFilled(position, cellSize)
+			if (!filled) {
+				val (row, col) = boardPositionFromOffset(
+					cellSize = cellSize,
+					position = position
+				)
+				drawCircle(
+					color = Color.Transparent,
+					radius = radius,
+					center = Offset(center.x, center.y),
+					style = Fill
+				)
+				onAction(
+					BoardAction.OnMovementPlayed(
+						boardPosition = BoardPosition(row, col)
+					)
+				)
 			}
 		}
 	}

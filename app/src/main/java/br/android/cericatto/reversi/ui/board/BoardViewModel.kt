@@ -69,17 +69,17 @@ class BoardViewModel @Inject constructor(
 	private fun checkAllMovements() {
 		println("==================================================\n")
 		println("==================================================\n")
-		addMovementPieces(Movement.NORTH)
-		addMovementPieces(Movement.NORTHEAST)
-		addMovementPieces(Movement.EAST)
-		addMovementPieces(Movement.SOUTHEAST)
-		addMovementPieces(Movement.SOUTH)
-		addMovementPieces(Movement.SOUTHWEST)
-		addMovementPieces(Movement.WEST)
-		addMovementPieces(Movement.NORTHWEST)
+		addMovementPieces(Directions.NORTH)
+		addMovementPieces(Directions.NORTH_EAST)
+		addMovementPieces(Directions.EAST)
+		addMovementPieces(Directions.SOUTH_EAST)
+		addMovementPieces(Directions.SOUTH)
+		addMovementPieces(Directions.SOUTH_WEST)
+		addMovementPieces(Directions.WEST)
+		addMovementPieces(Directions.NORTH_WEST)
 	}
 
-	private fun addMovementPieces(movement: Movement) {
+	private fun addMovementPieces(movement: Directions) {
 		val list = checkMovement(movement)
 		if (list.isNotEmpty()) {
 			_state.update { state ->
@@ -90,18 +90,18 @@ class BoardViewModel @Inject constructor(
 		}
 	}
 
-	private fun checkMovement(movement: Movement): List<BoardCell> {
+	private fun checkMovement(movement: Directions): List<BoardCell> {
 		val last = _state.value.last!!
 		val list = _state.value.boardData
 		val eatenPieces = when (movement) {
-			Movement.NORTH -> checkNorthDirection(last, list)
-			Movement.NORTHEAST -> checkNortheastDirection(last, list)
-			Movement.EAST -> checkEastDirection(last, list)
-			Movement.SOUTHEAST -> checkSoutheastDirection(last, list)
-			Movement.SOUTH -> checkSouthDirection(last, list)
-			Movement.SOUTHWEST -> checkSouthwestDirection(last, list)
-			Movement.WEST -> checkWestDirection(last, list)
-			Movement.NORTHWEST -> checkNorthwestDirection(last, list)
+			Directions.NORTH -> checkNorthDirection(last, list)
+			Directions.NORTH_EAST -> checkNortheastDirection(last, list)
+			Directions.EAST -> checkEastDirection(last, list)
+			Directions.SOUTH_EAST -> checkSoutheastDirection(last, list)
+			Directions.SOUTH -> checkSouthDirection(last, list)
+			Directions.SOUTH_WEST -> checkSouthwestDirection(last, list)
+			Directions.WEST -> checkWestDirection(last, list)
+			Directions.NORTH_WEST -> checkNorthwestDirection(last, list)
 		}
 
 		var updatedList: List<BoardCell> = emptyList()
